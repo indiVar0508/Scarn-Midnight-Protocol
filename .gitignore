@@ -1,0 +1,13 @@
+node_modules
+dist
+*.local
+.env
+.env.*
+.vercel
+tools/qa/out
+tools/voice/.cache
+*.wav
+*.onnx
+*.bin
+.DS_Store
+*.log
