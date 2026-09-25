@@ -150,6 +150,7 @@ class MusicPlayer {
   private current: Playing | null = null;
   private stingers: Playing[] = [];
   private timer: number | undefined;
+  private lastStart = 0;
   currentId: string | null = null;
 
   private ensureTimer(): void {
@@ -168,6 +169,7 @@ class MusicPlayer {
     if (!def) return;
     this.stop(opts.fade ?? 0.6);
     this.current = this.start(def, false, opts.fade ?? 0.3);
+    this.lastStart = this.current.startTime;
     this.currentId = id;
     this.ensureTimer();
   }
@@ -223,8 +225,9 @@ class MusicPlayer {
 
   /** Seconds since the current song started (audio clock). */
   songTime(): number {
-    if (!this.current || !audio.ctx) return 0;
-    return audio.ctx.currentTime - this.current.startTime;
+    if (!audio.ctx) return 0;
+    // keeps counting after a one-shot song ends (rhythm game needs a monotonic clock)
+    return audio.ctx.currentTime - (this.current?.startTime ?? this.lastStart);
   }
 
   songStart(): number {

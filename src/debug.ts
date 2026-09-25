@@ -7,7 +7,7 @@ import { autoSolve, tape } from './state/tape';
 import { input } from './game/systems/Input';
 
 /**
- * Test hooks for the automated playthrough (tools/qa/playthrough.mjs) and for
+ * Test hooks for the automated playthrough (tools/qa/run.mjs) and for
  * humans poking at the console. Nothing here runs unless called.
  */
 export function installDebug(): void {

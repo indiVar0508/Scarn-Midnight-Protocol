@@ -312,7 +312,7 @@ export abstract class ChapterScene extends Phaser.Scene {
       if (rig) rig.talking = true;
       void voice.play(prompt.id).then(() => rig && (rig.talking = false));
     }
-    let idx = 0;
+    let idx: number;
     try {
       idx = await showDialogue(
         {

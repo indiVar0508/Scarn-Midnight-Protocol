@@ -87,6 +87,7 @@ export class OverlayScene extends Phaser.Scene {
     ensureProp(this, 'flare');
     ensureProp(this, 'flarering');
     ensureProp(this, 'explosion');
+    ensureProp(this, 'explosion_plain');
   }
 
   update(_t: number, delta: number): void {
@@ -161,7 +162,7 @@ export class OverlayScene extends Phaser.Scene {
     const objs: Phaser.GameObjects.GameObject[] = [];
     const bg = this.add.rectangle(0, 0, 1280, 720, 0x07030a, 0.92).setOrigin(0).setDepth(25);
     objs.push(bg);
-    const boom = this.add.image(640, 360, 'explosion').setScale(0.2 / R).setAlpha(0).setDepth(26);
+    const boom = this.add.image(640, 360, 'explosion_plain').setScale(0.2 / R).setAlpha(0).setDepth(26);
     objs.push(boom);
     for (let i = 0; i < words.length; i++) {
       const t = this.add

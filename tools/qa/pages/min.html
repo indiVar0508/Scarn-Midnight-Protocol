@@ -1,7 +1,0 @@
-<!doctype html><html><body style="margin:0;background:#000"><div id="g"></div>
-<script type="module">
-import Phaser from '/node_modules/.vite/deps/phaser.js';
-const type = new URLSearchParams(location.search).get('t') === 'canvas' ? Phaser.CANVAS : Phaser.WEBGL;
-class S extends Phaser.Scene { create() { const g = this.add.graphics(); g.fillStyle(0xff0000).fillRect(0,0,1280,720); for (let i=0;i<40;i++) this.add.rectangle(Math.random()*1280, Math.random()*720, 60, 60, 0x00ff00); } }
-window.game = new Phaser.Game({ type, parent: 'g', width: 1280, height: 720, scene: S, banner: false, audio: { noAudio: true } });
-</script></body></html>

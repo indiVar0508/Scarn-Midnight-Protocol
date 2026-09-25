@@ -46,6 +46,8 @@ const KEYMAP: Record<string, Action[]> = {
 class InputManager {
   private held = new Set<Action>();
   private edge = new Set<Action>();
+  /** performance.now() of the most recent press per action (precise rhythm timing). */
+  private edgeTime = new Map<Action, number>();
   private virtualHeld = new Set<Action>();
   private padHeld = new Set<Action>();
   private prevPad = new Set<Action>();
@@ -87,7 +89,11 @@ class InputManager {
     if (ui.get().screen === 'game' && ['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
     if (ui.get().inputMode !== 'kbm') ui.set({ inputMode: 'kbm' });
     if (!e.repeat) {
-      acts.forEach((a) => this.edge.add(a));
+      const now = performance.now();
+      acts.forEach((a) => {
+        this.edge.add(a);
+        this.edgeTime.set(a, e.timeStamp || now);
+      });
       this.mashCount++;
       this.lastKey = e.code;
     }
@@ -154,6 +160,7 @@ class InputManager {
     if (down) {
       if (!this.virtualHeld.has(a)) {
         this.edge.add(a);
+        this.edgeTime.set(a, performance.now());
         if (a === 'fire' || a === 'action' || a === 'interact' || a === 'dodge') this.mashCount++;
       }
       this.virtualHeld.add(a);
@@ -188,6 +195,7 @@ class InputManager {
     for (const a of this.padHeld) {
       if (!this.prevPad.has(a)) {
         this.edge.add(a);
+        this.edgeTime.set(a, performance.now());
         this.mashCount++;
       }
     }
@@ -203,6 +211,11 @@ class InputManager {
   pressed(a: Action): boolean {
     if (!this.enabled) return false;
     return this.edge.has(a);
+  }
+
+  /** When the last press of `a` happened (performance.now() clock). */
+  pressTime(a: Action): number {
+    return this.edgeTime.get(a) ?? performance.now();
   }
 
   /** Read and clear an edge (so two systems don't both react). */

@@ -134,6 +134,14 @@ export const SPECS: Record<string, CharSpec> = {
     skin: SKIN.a, hair: '#7a5530', hairStyle: 'short', jaw: 0.8, nose: 1, brows: 'flat', eyes: 'normal',
     outfit: 'jersey', top: '#f4f4f4', top2: '#1f4fd1', number: '7', pants: '#1f4fd1', shoes: '#111111', skates: true, gloves: '#1f4fd1', bulk: 1.1,
   },
+  goalie_red: {
+    skin: '#c68a5e', hair: '#1a1a1a', hairStyle: 'short', jaw: 0.9, nose: 1, brows: 'bushy', eyes: 'normal',
+    outfit: 'jersey', top: '#c81d25', top2: '#ffffff', number: '31', pants: '#c81d25', shoes: '#111111', skates: true, gloves: '#ffffff', bulk: 1.4,
+  },
+  goalie_blue: {
+    skin: '#f2c29b', hair: '#8a5a30', hairStyle: 'short', jaw: 0.9, nose: 1, brows: 'bushy', eyes: 'normal',
+    outfit: 'jersey', top: '#f4f4f4', top2: '#1f4fd1', number: '30', pants: '#1f4fd1', shoes: '#111111', skates: true, gloves: '#1f4fd1', bulk: 1.4,
+  },
   goalie: {
     skin: SKIN.b, hair: '#111111', hairStyle: 'mask', jaw: 0.8, nose: 1, brows: 'flat', eyes: 'normal', glasses: 'sun',
     outfit: 'jersey', top: '#1a1a1a', top2: '#e8b83a', number: '1', pants: '#1a1a1a', shoes: '#050505', skates: true, gloves: '#e8b83a', bulk: 1.35,

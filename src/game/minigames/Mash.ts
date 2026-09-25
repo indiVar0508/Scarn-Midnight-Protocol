@@ -37,13 +37,14 @@ export async function mash(scene: ChapterScene, o: MashOpts): Promise<void> {
   let pulse = 0;
   await scene.frameLoop((dt, done) => {
     const presses = input.resetMash() + (qa.autoWin ? 1 : 0);
+    // Decay first, then presses, so the last press can actually top the meter off.
+    fill = Math.max(0, fill - decay * dt);
     if (presses > 0) {
       fill = Math.min(1, fill + presses / need);
       sfx('ui_blip', 0, 30);
       o.onPress?.(fill);
       pulse = 1;
     }
-    fill = Math.max(0, fill - decay * dt);
     o.onTick?.(fill, dt);
     pulse = Math.max(0, pulse - dt * 6);
     bar.width = Math.max(4, fill * 552);

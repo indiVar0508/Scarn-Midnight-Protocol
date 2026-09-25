@@ -18,6 +18,32 @@ const paperReam = (g: CanvasRenderingContext2D, x: number, y: number, w: number,
   text(g, label, x + w / 2, y + h / 2, { size: Math.min(10, h * 0.28), color: '#fff', font: 'Arial', weight: '900' });
 };
 
+function paintExplosion(g: CanvasRenderingContext2D, label: boolean): void {
+    // Deliberately terrible clip-art explosion with a visible white cut-out border.
+    const pts: number[] = [];
+    for (let i = 0; i < 22; i++) {
+      const a = (i / 22) * Math.PI * 2;
+      const r = i % 2 ? 90 : 140;
+      pts.push(150 + Math.cos(a) * r, 150 + Math.sin(a) * r);
+    }
+    poly(g, pts);
+    g.lineWidth = 14;
+    g.strokeStyle = '#ffffff';
+    g.stroke();
+    g.fillStyle = '#ff5a1a';
+    g.fill();
+    const pts2: number[] = [];
+    for (let i = 0; i < 18; i++) {
+      const a = (i / 18) * Math.PI * 2 + 0.2;
+      const r = i % 2 ? 50 : 95;
+      pts2.push(150 + Math.cos(a) * r, 150 + Math.sin(a) * r);
+    }
+    poly(g, pts2);
+    g.fillStyle = '#ffd21a';
+    g.fill();
+    if (label) text(g, 'KA-BOOM', 150, 150, { size: 42, color: '#fff', stroke: '#b01010', strokeW: 6, rot: -0.12 });
+  }
+
 const P: Record<string, PropDef> = {
   // ------------------------------------------------------------ weapons/hand items
   pistol: [34, 22, 6, 10, (g) => {
@@ -1128,31 +1154,9 @@ const P: Record<string, PropDef> = {
     inked(g, '#222');
     text(g, 'GETAWAY VEHICLE', 95, 84, { size: 11, color: '#3a2a08' });
   }],
-  explosion: [300, 300, 150, 150, (g) => {
-    // Deliberately terrible clip-art explosion with a visible white cut-out border.
-    const pts: number[] = [];
-    for (let i = 0; i < 22; i++) {
-      const a = (i / 22) * Math.PI * 2;
-      const r = i % 2 ? 90 : 140;
-      pts.push(150 + Math.cos(a) * r, 150 + Math.sin(a) * r);
-    }
-    poly(g, pts);
-    g.lineWidth = 14;
-    g.strokeStyle = '#ffffff';
-    g.stroke();
-    g.fillStyle = '#ff5a1a';
-    g.fill();
-    const pts2: number[] = [];
-    for (let i = 0; i < 18; i++) {
-      const a = (i / 18) * Math.PI * 2 + 0.2;
-      const r = i % 2 ? 50 : 95;
-      pts2.push(150 + Math.cos(a) * r, 150 + Math.sin(a) * r);
-    }
-    poly(g, pts2);
-    g.fillStyle = '#ffd21a';
-    g.fill();
-    text(g, 'KA-BOOM', 150, 150, { size: 42, color: '#fff', stroke: '#b01010', strokeW: 6, rot: -0.12 });
-  }],
+  explosion: [300, 300, 150, 150, (g) => paintExplosion(g, true)],
+  // Same clip-art burst without the lettering, for sitting behind titles.
+  explosion_plain: [300, 300, 150, 150, (g) => paintExplosion(g, false)],
   muzzle: [40, 30, 4, 15, (g) => {
     poly(g, [2, 15, 16, 4, 20, 10, 38, 15, 20, 20, 16, 26]);
     g.fillStyle = '#fff3a0';

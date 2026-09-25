@@ -11,3 +11,4 @@ tools/voice/.cache
 *.bin
 .DS_Store
 *.log
+tools/voice/lines.json

@@ -13,7 +13,6 @@ export function Credits() {
   useEffect(() => {
     const t = window.setTimeout(next, 64000);
     return () => window.clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
     <div className="fill credits">

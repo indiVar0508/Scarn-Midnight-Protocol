@@ -16,7 +16,7 @@
     "test": "vitest run",
     "voice:export": "node --experimental-strip-types tools/voice/export-lines.ts",
     "voice:generate": "python3 tools/voice/generate.py",
-    "e2e": "node tools/qa/playthrough.mjs"
+    "qa": "node tools/qa/run.mjs"
   },
   "dependencies": {
     "phaser": "4.2.1",
