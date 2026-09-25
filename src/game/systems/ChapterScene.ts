@@ -204,6 +204,33 @@ export abstract class ChapterScene extends Phaser.Scene {
     });
   }
 
+  /**
+   * Run fn every frame until it calls done(). The standard shape of every
+   * minigame loop; cancelled automatically with the scene.
+   */
+  frameLoop(fn: (dt: number, done: () => void) => void): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (this.signal.aborted) return reject(new Cancelled());
+      let finished = false;
+      const onAbort = () => {
+        this.updaters.delete(tick);
+        reject(new Cancelled());
+      };
+      const done = () => {
+        if (finished) return;
+        finished = true;
+        this.updaters.delete(tick);
+        this.signal.removeEventListener('abort', onAbort);
+        resolve();
+      };
+      const tick = (dt: number) => {
+        if (!finished) fn(dt, done);
+      };
+      this.signal.addEventListener('abort', onAbort, { once: true });
+      this.updaters.add(tick);
+    });
+  }
+
   tweenP(cfg: Phaser.Types.Tweens.TweenBuilderConfig): Promise<void> {
     return new Promise((resolve, reject) => {
       if (this.signal.aborted) return reject(new Cancelled());
@@ -293,7 +320,7 @@ export abstract class ChapterScene extends Phaser.Scene {
           name: prompt ? c.name : 'MICHAEL SCARN',
           color: prompt ? c.color : CAST.scarn.color,
           portrait: portraitFor(prompt ? c.portrait : 'scarn', prompt ? c.color : CAST.scarn.color),
-          text: prompt?.text ?? '…',
+          text: prompt?.text ?? '(What does Scarn say?)',
           style: 'normal',
           choices: choices.map((ch) => ch.label),
           autoMs: null,

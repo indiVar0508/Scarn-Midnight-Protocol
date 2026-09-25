@@ -33,6 +33,8 @@ export class Scarn extends Actor {
   onDown: (() => void) | null = null;
   canPose = true;
   sneaking = false;
+  skates = false;
+  fireInterval = 0.19;
   hidden = false; // stealth: inside a locker / behind cover
   footstepT = 0;
 
@@ -56,7 +58,8 @@ export class Scarn extends Actor {
     this.mode = m;
     if (combat) this.combat = combat;
     if (m === 'combat') {
-      this.rig.hold('pistol', 2, 2, 0);
+      if (this.skates) this.rig.hold('stick', 0, 0, -0.5);
+      else this.rig.hold('pistol', 2, 2, 0);
       if (!this.reticle && this.scene.textures.exists('reticle')) this.reticle = this.scene.add.image(0, 0, 'reticle').setDepth(9999).setScale(1 / R);
       ui.set({ hud: { hp: this.hp, hpMax: this.maxHp }, touchLayout: 'action' });
     } else {
@@ -91,10 +94,10 @@ export class Scarn extends Actor {
     let mv = locked ? { x: 0, y: 0 } : input.move();
     if (this.hidden) mv = { x: 0, y: 0 };
     const sneak = this.mode === 'stealth';
-    const maxSp = sneak ? 210 : this.speed;
+    const maxSp = sneak ? 210 : this.skates ? 380 : this.speed;
     const tx = mv.x * maxSp;
     const ty = mv.y * maxSp * 0.72;
-    const a = this.accel * dt;
+    const a = (this.skates ? 900 : this.accel) * dt;
     this.vx = approach(this.vx, tx, a);
     this.vy = approach(this.vy, ty, a);
     this.moveBy(this.vx * dt, this.vy * dt);
@@ -137,8 +140,9 @@ export class Scarn extends Actor {
       this.rig.aimAngle = this.aim;
 
       if (input.isDown('fire') && this.fireCd <= 0) {
-        this.fireCd = 0.19;
-        this.combat?.fire(this, this.aim, { speed: 950 });
+        this.fireCd = this.skates ? 0.3 : this.fireInterval;
+        if (this.skates) sfx('slapshot');
+        this.combat?.fire(this, this.aim, this.skates ? { speed: 900, tex: 'puck', z: 24 } : { speed: 950 });
         this.rig.kick(1);
         s.shake(60, 0.002);
       }
@@ -147,7 +151,11 @@ export class Scarn extends Actor {
     }
 
     // --- animation state
-    if (this.rig.anim !== 'pose' || this.mode !== 'locked') {
+    if (this.hidden) {
+      // tucked away in a locker / behind cover
+    } else if (this.skates) {
+      this.rig.setAnim('skate');
+    } else if (this.rig.anim !== 'pose' || this.mode !== 'locked') {
       if (speed > 40) this.rig.setAnim(sneak ? 'sneak' : speed > 260 ? 'run' : 'walk');
       else if (this.rig.anim !== 'pose') this.rig.setAnim('idle', sneak ? 'crouch' : 'stand');
     }

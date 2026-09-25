@@ -15,6 +15,7 @@ export interface GoonSpec {
   skin?: string;
   burst?: number;
   aggression?: number;
+  weapon?: 'pistol' | 'stick';
 }
 
 export interface WaveSpec {
@@ -56,11 +57,10 @@ export async function runEncounter(scene: ChapterScene, scarn: Scarn, combat: Co
     if (w.delay) await scene.wait(w.delay);
     w.onStart?.();
     const goons = w.goons.map((g) => new Goon(scene, combat, scarn, g.x, g.y, g));
-    if (qa.skipFights) {
-      await scene.wait(300);
-      goons.forEach((g) => g.damage(99, 1, 0));
-    }
-    await scene.waitUntil(() => goons.every((g) => !g.alive));
+    await scene.waitUntil(() => {
+      if (qa.skipFights) goons.forEach((g) => g.alive && g.damage(99, 1, 0));
+      return goons.every((g) => !g.alive);
+    });
   }
   scene.updaters.delete(god);
   combat.clearBullets();

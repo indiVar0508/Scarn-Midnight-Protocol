@@ -75,6 +75,10 @@ export const SPECS: Record<string, CharSpec> = {
     skin: SKIN.a, hair: '#3a2618', hairStyle: 'slick', jaw: 0.9, nose: 1.1, brows: 'worried', eyes: 'tired',
     outfit: 'hospital', top: '#a9d4f0', top2: '#6fa8d6', pants: '#a9d4f0', shoes: '#e8e8e8', shortSleeves: true, bareLegs: true, bulk: 1.05,
   },
+  scarn_disguise: {
+    skin: '#f2c29b', hair: '#3a2618', hairStyle: 'cap', jaw: 0.9, nose: 1.1, brows: 'heroic', eyes: 'smug', mustache: '#3a2618',
+    outfit: 'track', top: '#e07a2f', top2: '#2a2a2a', pants: '#3a4a2a', shoes: '#0d0d10', bulk: 1.08,
+  },
   goldenface: {
     skin: '#e9b949', hair: '#101010', hairStyle: 'slick', jaw: 0.7, nose: 1.2, brows: 'arched', eyes: 'smug', gold: true,
     outfit: 'suit', top: '#121212', shirt: '#1e1e1e', tie: '#e8b83a', tieStyle: 'tie', pants: '#121212', shoes: '#050505', gloves: '#e9b949',

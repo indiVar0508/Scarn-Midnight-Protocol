@@ -76,8 +76,10 @@ export async function playTape(): Promise<void> {
     return;
   }
   stopTape();
+  voice.stop();
   sfx('tape_click');
   tape.set({ playing: true });
+  audio.duck(true);
   const buf = await voice.buffer(SECRET_LINE);
   const ctx = audio.ctx;
   if (buf && ctx) {
@@ -110,6 +112,7 @@ export async function playTape(): Promise<void> {
 
 export function stopTape(): void {
   cancelAnimationFrame(raf);
+  audio.duck(false);
   if (src) {
     try {
       src.onended = null;

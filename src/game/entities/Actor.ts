@@ -84,6 +84,19 @@ export class Actor {
     return Math.hypot(o.x - this.x, o.y - this.y);
   }
 
+  /** Replace the rig (costume change) keeping position and facing. */
+  swapRig(id: string): void {
+    const old = this.rig;
+    const r = this.scene.rig(id, this.x, this.y, old.facing);
+    for (const [k, v] of this.scene.speakers) if (v === old) this.scene.speakers.set(k, r);
+    const cam = this.scene.cameras.main;
+    const following = (cam as unknown as { _follow: unknown })._follow === old;
+    old.destroy();
+    this.rig = r;
+    if (following) cam.startFollow(r, true, 0.09, 0.09, 0, 60);
+    this.sync();
+  }
+
   destroy(): void {
     this.alive = false;
     this.rig.destroy();

@@ -33,6 +33,7 @@ export const CAST = {
   cashier: { name: 'CASHIER', color: '#ffb36b', voice: 'af_sarah', speed: 1.0, fx: 'none', portrait: 'cashier' },
   coach: { name: 'COACH', color: '#ff9d5c', voice: 'am_eric', speed: 1.05, fx: 'none', portrait: 'coach' },
   chad: { name: 'CHAD "THE WALL" KOWALSKI', color: '#ffd29a', voice: 'am_puck', speed: 1.0, fx: 'none', portrait: 'chad' },
+  chad_towel: { name: 'CHAD (IN THE "SAUNA")', color: '#ffd29a', voice: 'am_puck', speed: 1.05, fx: 'none', portrait: 'chad_towel' },
   announcer: { name: 'ANNOUNCER', color: '#ffffff', voice: 'am_fenrir', speed: 1.05, fx: 'radio', portrait: null },
   bouncer: { name: 'BOUNCER', color: '#b7a3ff', voice: 'am_onyx', speed: 1.0, fx: 'none', portrait: 'bouncer' },
   patron: { name: 'JAZZ PATRON', color: '#d7c3a0', voice: 'bm_lewis', speed: 1.0, fx: 'none', portrait: 'patron' },

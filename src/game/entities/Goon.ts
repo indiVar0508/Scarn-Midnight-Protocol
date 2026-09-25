@@ -27,7 +27,9 @@ export class Goon extends Actor {
   fireRate: number;
   melee = false;
 
-  constructor(scene: ChapterScene, combat: Combat, target: Actor, x: number, y: number, opts: { skin?: string; hp?: number; enterTo?: { x: number; y: number }; aggression?: number; burst?: number } = {}) {
+  bulletTex: string | undefined;
+
+  constructor(scene: ChapterScene, combat: Combat, target: Actor, x: number, y: number, opts: { skin?: string; hp?: number; enterTo?: { x: number; y: number }; aggression?: number; burst?: number; weapon?: 'pistol' | 'stick' } = {}) {
     super(scene, scene.rig(opts.skin ?? 'goon', x, y, x < target.x ? 1 : -1), x, y, 'enemy');
     this.combat = combat;
     this.target = target;
@@ -41,7 +43,10 @@ export class Goon extends Actor {
     this.bulletSpeed = (assist ? 250 : 330) * (0.9 + this.aggression * 0.1);
     this.fireRate = (assist ? 2.6 : 1.8) / this.aggression;
     this.t = 0.6 + Math.random() * 1.2;
-    this.rig.hold('pistol', 2, 2, 0);
+    if (opts.weapon === 'stick') {
+      this.rig.hold('stick', 0, 0, -0.5);
+      this.bulletTex = 'puck';
+    } else this.rig.hold('pistol', 2, 2, 0);
     this.rig.stiffness = 14;
     if (!this.enterTo) this.state = 'move';
   }
@@ -114,7 +119,7 @@ export class Goon extends Actor {
         this.rig.aimAngle = ang;
         this.rig.setFacing(dx < 0 ? -1 : 1);
         if (this.t <= 0) {
-          this.combat.fire(this, ang + (Math.random() - 0.5) * 0.12, { speed: this.bulletSpeed, team: 'enemy' });
+          this.combat.fire(this, ang + (Math.random() - 0.5) * 0.12, { speed: this.bulletSpeed, team: 'enemy', tex: this.bulletTex, z: this.bulletTex ? 24 : undefined });
           this.rig.kick(1);
           this.shots--;
           if (this.shots > 0) this.t = 0.28;

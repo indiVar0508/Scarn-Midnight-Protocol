@@ -662,6 +662,37 @@ const P: Record<string, PropDef> = {
     g.fillStyle = '#6a6a6a';
     for (let i = 0; i < 12; i++) g.fillRect(168 + (i % 6) * 5, 20 + Math.floor(i / 6) * 12, 2, 8);
   }],
+  instacam: [60, 50, 30, 48, (g) => {
+    rr(g, 4, 10, 52, 36, 5);
+    inked(g, '#f4f4f0');
+    ellipse(g, 30, 28, 12, 12);
+    inked(g, '#222');
+    ellipse(g, 30, 28, 6, 6);
+    inked(g, '#4a6a9a', 1.5);
+    g.fillStyle = '#e33';
+    g.fillRect(10, 14, 8, 5);
+    g.fillStyle = '#ffcf3a';
+    for (let i = 0; i < 4; i++) g.fillRect(4 + i * 13, 42, 13, 4);
+  }],
+  polaroid: [24, 28, 12, 14, (g) => {
+    rr(g, 1, 1, 22, 26, 1);
+    inked(g, '#ffffff', 1.4);
+    g.fillStyle = '#3a4a5a';
+    g.fillRect(4, 4, 16, 16);
+    ellipse(g, 12, 11, 4, 5);
+    g.fillStyle = '#f2c29b';
+    g.fill();
+  }],
+  wateringcan: [140, 90, 70, 10, (g) => {
+    g.fillStyle = '#f2c29b';
+    rr(g, 0, 0, 40, 30, 10);
+    inked(g, '#f2c29b', 2);
+    rr(g, 30, 20, 70, 50, 10);
+    inked(g, '#3fae5a');
+    poly(g, [96, 40, 138, 62, 134, 72, 96, 60]);
+    inked(g, '#3fae5a', 2);
+    text(g, 'RAIN', 64, 46, { size: 14, color: '#fff' });
+  }],
   mustache: [30, 12, 15, 6, (g) => {
     blob(g, [2, 6, 8, 2, 15, 5, 22, 2, 28, 6, 22, 10, 15, 8, 8, 10]);
     inked(g, '#3a2618', 1.4);
@@ -1049,7 +1080,7 @@ const P: Record<string, PropDef> = {
   neon: [260, 80, 130, 40, (g) => {
     g.shadowColor = '#ff4fb0';
     g.shadowBlur = 12;
-    text(g, "BILLY'S", 130, 34, { size: 44, color: '#ffd1ef', font: '"Brush Script MT", cursive', weight: '700' });
+    text(g, "BILLY'S", 130, 34, { size: 46, color: '#ffd1ef', font: FONT_HAND });
     g.shadowBlur = 0;
     text(g, '(glow sticks + tape)', 130, 70, { size: 8, color: '#b88', font: 'Arial' });
   }],
@@ -1129,6 +1160,21 @@ const P: Record<string, PropDef> = {
     g.strokeStyle = '#ff9a1a';
     g.lineWidth = 2;
     g.stroke();
+  }],
+  jackcutout: [70, 100, 35, 98, (g) => {
+    g.fillStyle = '#c9a26b';
+    g.fillRect(32, 66, 5, 32);
+    poly(g, [8, 70, 14, 42, 56, 42, 62, 70]);
+    inked(g, '#7a2a2a', 2);
+    ellipse(g, 35, 26, 15, 17);
+    inked(g, '#e0a877', 2);
+    blob(g, [18, 22, 22, 8, 35, 5, 50, 10, 54, 24, 58, 44, 50, 30, 20, 30, 12, 44]);
+    inked(g, '#d8d4cc', 2);
+    g.fillStyle = '#c0392b';
+    g.fillRect(19, 16, 33, 5);
+    rr(g, 2, 74, 66, 20, 3);
+    inked(g, '#ffffff', 2);
+    text(g, "DON'T SHOOT", 35, 84, { size: 11, color: '#c0152a' });
   }],
   cutout: [60, 90, 30, 88, (g) => {
     g.fillStyle = '#c9a26b';

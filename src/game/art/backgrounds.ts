@@ -493,7 +493,7 @@ export function paintClub(w = 2000): HTMLCanvasElement {
   // Neon sign
   g.shadowColor = '#ff4fd8';
   g.shadowBlur = 20;
-  text(g, 'THE FUNKY CAT', 1000, 90, { size: 56, color: '#ffc6f5', font: '"Brush Script MT", "Snell Roundhand", cursive' });
+  text(g, 'THE FUNKY CAT', 1000, 90, { size: 60, color: '#ffc6f5', font: FONT_HAND });
   g.shadowBlur = 0;
   // cat head
   g.strokeStyle = '#6affff';

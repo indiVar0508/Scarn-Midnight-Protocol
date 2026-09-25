@@ -39,6 +39,7 @@ export function installDebug(): void {
         beat: save.get().beat,
         scenes: active,
         tape: tape.get().open,
+        busy: !!(g?.scene.getScenes(true).find((x) => x.scene.key.startsWith('Ch')) as unknown as { busy?: boolean } | undefined)?.busy,
         fps: g ? Math.round(g.loop.actualFps) : 0,
       };
     },
