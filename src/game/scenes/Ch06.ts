@@ -387,7 +387,7 @@ export class Ch06 extends ChapterScene {
         ["REPLAY (DIRECTOR'S CUT)", 1.2],
       ] as [string, number][]) {
         h3.setPosition(1300, 560).setAngle(0).setAlpha(1);
-        if (label) void this.card({ kind: 'stamp', title: label }, 1000);
+        if (label) this.detach(this.card({ kind: 'stamp', title: label }, 1000));
         this.cameras.main.setZoom(zoom);
         this.cameras.main.centerOn(1300, 420);
         sfx('cannon');
@@ -447,7 +447,7 @@ export class Ch06 extends ChapterScene {
       }
       if (p === 3 && !catherineDone) {
         catherineDone = true;
-        void this.catherine(gf, combat);
+        this.detach(this.catherine(gf, combat));
       }
       if (p === 4) finale = true;
     };
@@ -491,7 +491,7 @@ export class Ch06 extends ChapterScene {
     await this.say(L.end3);
     const sam = this.rig('samuel', -60, 600, 1);
     this.speaker('samuel', sam);
-    void walkRig(this, sam, 250, 600, 360, 'run');
+    this.detach(walkRig(this, sam, 250, 600, 360, 'run'));
     await this.say(L.end4);
     // gold smoke bomb
     sfx('small_boom');

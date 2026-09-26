@@ -20,6 +20,8 @@ export type ScarnMode = 'explore' | 'combat' | 'stealth' | 'locked';
  */
 export class Scarn extends Actor {
   mode: ScarnMode = 'explore';
+  /** Forced forward speed for auto-run sections (the player steers vertically). */
+  autoRun: number | null = null;
   combat: Combat | null = null;
   speed = 300;
   accel = 2600;
@@ -55,6 +57,7 @@ export class Scarn extends Actor {
   }
 
   setMode(m: ScarnMode, combat?: Combat): void {
+    const wasCombat = this.mode === 'combat';
     this.mode = m;
     if (combat) this.combat = combat;
     if (m === 'combat') {
@@ -63,7 +66,8 @@ export class Scarn extends Actor {
       if (!this.reticle && this.scene.textures.exists('reticle')) this.reticle = this.scene.add.image(0, 0, 'reticle').setDepth(9999).setScale(1 / R);
       ui.set({ hud: { hp: this.hp, hpMax: this.maxHp }, touchLayout: 'action' });
     } else {
-      this.rig.hold(null);
+      // Only put the weapon away; props handed over in cutscenes (trophy, phone...) stay in hand.
+      if (wasCombat) this.rig.hold(null);
       this.rig.aimAngle = null;
       this.reticle?.destroy();
       this.reticle = null;
@@ -95,7 +99,8 @@ export class Scarn extends Actor {
     if (this.hidden) mv = { x: 0, y: 0 };
     const sneak = this.mode === 'stealth';
     const maxSp = sneak ? 210 : this.skates ? 380 : this.speed;
-    const tx = mv.x * maxSp;
+    // Auto-run: forward speed is forced; left/right only brake or push a little.
+    const tx = this.autoRun !== null && !locked ? this.autoRun * (mv.x < -0.3 ? 0.6 : mv.x > 0.3 ? 1.15 : 1) : mv.x * maxSp;
     const ty = mv.y * maxSp * 0.72;
     const a = (this.skates ? 900 : this.accel) * dt;
     this.vx = approach(this.vx, tx, a);

@@ -17,7 +17,8 @@ const browser = await chromium.launch({
   args: ['--autoplay-policy=no-user-gesture-required'],
 });
 const vp = (process.env.VP || '1280x720').split('x').map(Number);
-const page = await browser.newPage({ viewport: { width: vp[0], height: vp[1] } });
+const touch = !!process.env.TOUCH;
+const page = await browser.newPage({ viewport: { width: vp[0], height: vp[1] }, ...(touch ? { hasTouch: true, isMobile: true } : {}) });
 const errors = [];
 page.on('console', (m) => {
   const t = m.text();
@@ -30,10 +31,12 @@ let shotN = 0;
 const t = {
   page,
   errors,
-  async open(query = '') {
-    await page.goto(`${base}/?unlock=all${webgl ? '' : '&renderer=canvas'}${query}`);
+  async open(query = '', { unlock = true } = {}) {
+    const params = [unlock ? 'unlock=all' : '', webgl ? '' : 'renderer=canvas'].filter(Boolean).join('&');
+    await page.goto(`${base}/?${params}${query}`);
     await page.waitForTimeout(1500);
-    await page.mouse.click(640, 360);
+    if (touch) await page.touchscreen.tap(vp[0] / 2, vp[1] / 2);
+    else await page.mouse.click(640, 360);
     await page.waitForTimeout(600);
   },
   wait: (ms) => page.waitForTimeout(ms),

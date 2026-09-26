@@ -55,6 +55,15 @@ export interface UIState {
   creditsNext: 'stats' | 'menu';
 }
 
+/** Phones/tablets without a mouse start with touch controls visible. */
+function touchOnlyDevice(): boolean {
+  try {
+    return window.matchMedia('(pointer: coarse)').matches && !window.matchMedia('(any-pointer: fine)').matches;
+  } catch {
+    return false;
+  }
+}
+
 export const ui = new Store<UIState>({
   screen: 'boot',
   settingsReturn: 'menu',
@@ -68,7 +77,7 @@ export const ui = new Store<UIState>({
   hud: null,
   toasts: [],
   loading: null,
-  inputMode: 'kbm',
+  inputMode: touchOnlyDevice() ? 'touch' : 'kbm',
   touchLayout: 'none',
   chapterTitle: null,
   fullscreen: false,

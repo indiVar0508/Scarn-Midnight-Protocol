@@ -28,6 +28,8 @@ export const CH08 = lines('ch08', {
   runObj: ['narrator', 'Escape! Dodge with UP/DOWN, roll with SPACE, shoot ahead.', { silent: true }],
   bark1: ['scarn', 'Coming through! Presidential business!'],
   bark2: ['goon', 'He took out the water cooler! Nobody takes out the water cooler!'],
+  parkour: ['scarn', 'Parkour! Parkour!'],
+  parkour2: ['samuel', 'Sir, you rolled over a chair.'],
   dive: ['scarn', 'Samuel! Jump!'],
   s2: ['samuel', 'Sir, we are on the ground floor.'],
   m6: ['scarn', 'Jump anyway!'],

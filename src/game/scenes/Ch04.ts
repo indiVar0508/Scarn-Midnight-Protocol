@@ -85,7 +85,7 @@ export class Ch04 extends ChapterScene {
     [this.chad, this.green, this.scarn.rig].forEach((r) => r.setAnim('skate'));
     this.coach.setPosition(380, 400);
     for (const n of ['3', '2', '1', 'GO!']) {
-      void this.card({ kind: 'stamp', title: n }, 600);
+      this.detach(this.card({ kind: 'stamp', title: n }, 600));
       sfx(n === 'GO!' ? 'whistle' : 'beep');
       await this.wait(650);
     }
@@ -132,7 +132,7 @@ export class Ch04 extends ChapterScene {
     await this.say(L.m3);
     this.letterbox(false);
     music.play('action', { fade: 0.2 });
-    [this.chad, this.green].forEach((r, i) => void walkRig(this, r, 200 + i * 80, 400 + i * 30, 260, 'skate'));
+    [this.chad, this.green].forEach((r, i) => this.detach(walkRig(this, r, 200 + i * 80, 400 + i * 30, 260, 'skate')));
     this.scarn.setMode('combat', this.combat);
     this.objective(`Skate with ${ctl('move')} · Shoot pucks with ${ctl('fire')} · The ice is slippery!`);
     let k = 0;
@@ -254,14 +254,14 @@ export class Ch04 extends ChapterScene {
     coach.onSpotted = () => {
       if (caught) return;
       caught = true;
-      void (async () => {
+      this.detach((async () => {
         this.busy = true;
         scarn.setMode('locked');
         this.bark(L.coachSees);
         await this.wait(1400);
         await Director.overlay?.fade(true, 400);
         Director.restartCheckpoint();
-      })();
+      })());
     };
     this.objective(`Get Chad's ALL-STAR PASS. Stay out of the coach's sight. HIDE in lockers (${ctl('interact')}).`);
     let hasPhoto = false;

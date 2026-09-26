@@ -13,7 +13,6 @@ import { R } from '../art/characters';
 import { CH08 as L } from '../../data/script/ch08';
 import { music } from '../../audio/music';
 import { sfx, ambience } from '../../audio/sfx';
-import { input } from '../systems/Input';
 import { qa } from '../systems/qa';
 import { ctl } from '../systems/controlsText';
 import { Director } from '../Director';
@@ -148,6 +147,7 @@ export class Ch08 extends ChapterScene {
     wireRetake(this, this.scarn);
     this.objective(`ESCAPE! Steer UP/DOWN · ROLL through obstacles (${ctl('dodge')}) · SHOOT (${ctl('fire')})`);
     ['officechair', 'crate', 'plant'].forEach((k) => ensureProp(this, k));
+    let parkoured = false;
     const obstacles: { img: Phaser.GameObjects.Image; x: number; y: number; vx: number; vy: number; hit: boolean }[] = [];
     let spawnT = 1;
     let goonT = 2.5;
@@ -160,14 +160,9 @@ export class Ch08 extends ChapterScene {
       }
     };
     this.updaters.add(god);
+    this.scarn.autoRun = runSpeed;
     await this.frameLoop((dt, done) => {
       if (this.busy) return;
-      // auto-run: horizontal speed is forced, the player steers vertically
-      if (this.scarn.alive) {
-        const target = runSpeed;
-        this.scarn.vx += (target - this.scarn.vx) * Math.min(1, dt * 6);
-        if (input.isDown('left')) this.scarn.vx = Math.min(this.scarn.vx, 200);
-      }
       spawnT -= dt;
       if (spawnT <= 0 && this.scarn.x < HW - 700) {
         spawnT = 0.9 + Math.random() * 0.9;
@@ -195,6 +190,11 @@ export class Ch08 extends ChapterScene {
           if (this.scarn.dodgeT > 0) {
             o.hit = true;
             sfx('whoosh');
+            if (!parkoured) {
+              parkoured = true;
+              this.bark(L.parkour);
+              this.time.delayedCall(1600, () => this.bark(L.parkour2));
+            }
           } else if (this.scarn.damage(1, -1, 0)) {
             o.hit = true;
             this.tweens.add({ targets: o.img, angle: 90, alpha: 0.4, duration: 300 });
@@ -204,6 +204,7 @@ export class Ch08 extends ChapterScene {
       if (this.scarn.x > HW - 260) done();
     });
     this.updaters.delete(god);
+    this.scarn.autoRun = null;
     combat.clearBullets();
     combat.enemies().forEach((e) => e.damage(99, 1, 0));
     this.scarn.setMode('locked');

@@ -115,6 +115,7 @@ export function paintNewspaper(p: Paper, seed = 1): HTMLCanvasElement {
     }
   }
   text(g, 'continued on A12 (there is no A12)', 660, 560, { size: 12, font: 'Georgia, serif', weight: '400', color: '#333' });
+  text(g, 'ALSO: Scranton Strangler still at large · Pretzel Day moved again', 660, 580, { size: 11, font: 'Georgia, serif', weight: '400', color: '#333', maxW: 400 });
   // tape on the corners — Michael made these himself
   g.fillStyle = 'rgba(240,235,200,0.75)';
   g.save();

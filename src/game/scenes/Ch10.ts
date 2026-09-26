@@ -123,7 +123,7 @@ export class Ch10 extends ChapterScene {
     await this.cutaway([L.s1, L.m2]);
     this.letterbox(false);
     this.hockey.frozen = true;
-    void this.card({ kind: 'stamp', title: 'FACE-OFF!' }, 900);
+    this.detach(this.card({ kind: 'stamp', title: 'FACE-OFF!' }, 900));
     sfx('whistle');
     await this.wait(900);
     this.hockey.frozen = false;
@@ -171,7 +171,7 @@ export class Ch10 extends ChapterScene {
       }
       ui.set({ objective: `SCORE ${target} GOALS · HOME ${this.hockey.score.home} — ${this.hockey.score.away} AWAY` });
       this.hockey.faceoff();
-      void this.card({ kind: 'stamp', title: 'FACE-OFF!' }, 700);
+      this.detach(this.card({ kind: 'stamp', title: 'FACE-OFF!' }, 700));
       sfx('whistle');
       this.hockey.frozen = false;
     }
@@ -225,11 +225,11 @@ export class Ch10 extends ChapterScene {
       this.bark(L.net);
       const take = ((save.get().flags.takes_10 as number | undefined) ?? 1) + 1;
       setFlag('takes_10', take);
-      void (async () => {
+      this.detach((async () => {
         await this.wait(1600);
         await Director.overlay?.clapper(take);
         Director.restartCheckpoint();
-      })();
+      })());
     };
     this.showHelp(`KEEP-AWAY! Hold the puck, pass (${ctl('pass')}), check (${ctl('check')}) anyone heading for a net`);
     this.hockey.frozen = false;
@@ -277,7 +277,8 @@ export class Ch10 extends ChapterScene {
     music.stinger('ghost');
     await this.tweenP({ targets: jack, alpha: 1, duration: 1200 });
     this.tweens.add({ targets: [jack], y: 450, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-    this.updaters.add(() => str.setSize(2, jack.y - 150));
+    const hangString = () => str.setSize(2, jack.y - 150);
+    this.updaters.add(hangString);
     await this.say(L.j1);
     this.scarn.strike('kneel');
     await this.say(L.m8);
@@ -292,6 +293,7 @@ export class Ch10 extends ChapterScene {
     this.grayscale(false);
     await this.say(L.m9);
     await this.tweenP({ targets: [jack, str], alpha: 0, duration: 800 });
+    this.updaters.delete(hangString);
     jack.destroy();
     str.destroy();
     this.letterbox(false);
@@ -320,7 +322,7 @@ export class Ch10 extends ChapterScene {
       const puck = this.add.image(from[0], from[1], 'bombpuck').setScale(1.6 / R).setDepth(9000).setScrollFactor(0);
       ensureProp(this, 'dust');
       const trail = this.add.particles(0, 0, 'dust', { follow: puck, lifespan: 400, scale: { start: 1 / R, end: 0 }, alpha: { start: 0.8, end: 0 }, frequency: 20, tint: 0xffcf3a }).setDepth(8999).setScrollFactor(0);
-      if (caption) void this.card({ kind: 'stamp', title: caption }, ms);
+      if (caption) this.detach(this.card({ kind: 'stamp', title: caption }, ms));
       sfx('whoosh');
       await this.tweenP({ targets: puck, x: to[0], y: to[1], angle: 720, duration: ms, ease: 'Sine.easeInOut' });
       trail.destroy();
@@ -416,14 +418,14 @@ export class Ch10 extends ChapterScene {
     await this.wait(400);
     hs.slice(0, 3).forEach((r, i) => {
       r.setAnim('pose', 'victory');
-      void walkRig(this, r, 1400 + i * 50, 600, 300, 'run');
+      this.detach(walkRig(this, r, 1400 + i * 50, 600, 300, 'run'));
     });
     sfx('cheer_small');
     await this.say(L.hs1);
     await this.say(L.hs3);
     await this.say(L.sam2);
     unlockAchievement('hostage3');
-    void walkRig(this, hs[3], 1400, 600, 120);
+    this.detach(walkRig(this, hs[3], 1400, 600, 120));
     await this.wait(600);
   }
 

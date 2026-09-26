@@ -532,7 +532,7 @@ kbd {
 .chapters {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.2cqw;
+  gap: 1cqw;
 }
 
 .chapter-card {
@@ -542,33 +542,37 @@ kbd {
   background: linear-gradient(160deg, #221c2c, #120e18);
   color: #fff;
   text-align: left;
-  padding: 1cqw 1.2cqw 1.2cqw;
+  padding: 0.7cqw 1.2cqw 0.9cqw;
   cursor: pointer;
-  min-height: 11cqw;
+  min-height: 9cqw;
   position: relative;
   overflow: hidden;
 }
 
 .chapter-card .num {
   font-family: var(--title);
-  font-size: 4.4cqw;
+  font-size: 3.2cqw;
   color: var(--gold);
   line-height: 1;
 }
 
 .chapter-card .name {
   font-family: var(--title);
-  font-size: 2.1cqw;
+  font-size: 1.9cqw;
   letter-spacing: 0.04em;
   line-height: 1;
   margin-top: 0.3cqw;
 }
 
 .chapter-card .blurb {
-  font-size: 1.15cqw;
+  font-size: 1.05cqw;
   color: var(--muted);
-  margin-top: 0.5cqw;
-  line-height: 1.25;
+  margin-top: 0.4cqw;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .chapter-card:hover,
@@ -1466,4 +1470,9 @@ kbd {
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+.setting-label {
+  cursor: pointer;
+  user-select: none;
 }

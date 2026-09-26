@@ -8,22 +8,18 @@ import { sfx } from '../audio/sfx';
 function Toggle({ k, label, note }: { k: keyof S; label: string; note?: string }) {
   const s = useSettings();
   const on = !!s[k];
+  const flip = () => {
+    updateSettings({ [k]: !on } as Partial<S>);
+    sfx('ui_move');
+  };
   return (
     <div className="setting">
-      <div>
+      {/* the whole label is a click target too; the switch stays the keyboard/AT control */}
+      <div className="setting-label" onClick={flip}>
         {label}
         {note && <small>{note}</small>}
       </div>
-      <button
-        className="toggle"
-        role="switch"
-        aria-checked={on}
-        aria-label={label}
-        onClick={() => {
-          updateSettings({ [k]: !on } as Partial<S>);
-          sfx('ui_move');
-        }}
-      />
+      <button className="toggle" role="switch" aria-checked={on} aria-label={label} onClick={flip} />
     </div>
   );
 }

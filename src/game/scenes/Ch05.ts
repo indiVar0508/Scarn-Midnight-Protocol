@@ -321,7 +321,7 @@ export class Ch05 extends ChapterScene {
       ['REPLAY (ANGLE 2)', 1.7],
       ['REPLAY (SLOW-MO)', 2.1],
     ] as [string, number][]) {
-      void this.card({ kind: 'stamp', title: label }, 1100);
+      this.detach(this.card({ kind: 'stamp', title: label }, 1100));
       this.cameras.main.centerOn(this.jasmine.x + (zoom > 2 ? 0 : 60), this.jasmine.y - 80);
       this.cameras.main.setZoom(zoom);
       this.jasmine.setAnim('pose', 'stand');

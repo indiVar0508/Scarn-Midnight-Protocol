@@ -165,7 +165,7 @@ export class Ch09 extends ChapterScene {
       const d = dancers[i];
       const [x, y] = spots[i % spots.length];
       sfx('cheer_small', (x - 1060) / 600);
-      void walkRig(this, d, x, y, 320).then(() => d.setFacing(1));
+      this.detach(walkRig(this, d, x, y, 320).then(() => d.setFacing(1)));
     };
     for (let attempt = (getFlag('ch09_fails', 0) as number); ; attempt++) {
       dancers.forEach((d) => d.setData('joined', false));

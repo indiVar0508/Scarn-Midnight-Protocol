@@ -73,7 +73,7 @@ export class Ch03 extends ChapterScene {
       }
       car.x = -300;
       this.tweens.add({ targets: car, x: 1500, duration: 2200, ease: 'Linear' });
-      void this.card({ kind: 'stamp', title: caps[i].text.toUpperCase() }, 1700);
+      this.detach(this.card({ kind: 'stamp', title: caps[i].text.toUpperCase() }, 1700));
       sfx('whoosh');
       await this.wait(2100);
     }
@@ -164,7 +164,7 @@ export class Ch03 extends ChapterScene {
     const done = (getFlag('ch03_scores', '') as string).split(',').filter(Boolean).map(Number);
     for (let d = done.length; d < drills.length; d++) {
       const dr = drills[d];
-      void this.card({ kind: 'stamp', title: `DAY ${Math.floor(d / 2) + 1} · ${['MORNING', 'NOON', 'DUSK'][d % 3]}` }, 1100);
+      this.detach(this.card({ kind: 'stamp', title: `DAY ${Math.floor(d / 2) + 1} · ${['MORNING', 'NOON', 'DUSK'][d % 3]}` }, 1100));
       sfx('whoosh');
       this.flash(0xffffff, 150, 0.4);
       await this.wait(900);

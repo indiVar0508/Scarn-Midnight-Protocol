@@ -123,15 +123,16 @@ class InputManager {
   };
 
   private onPointerDown = (e: PointerEvent) => {
+    // Any touch anywhere (menus, dialogue box, canvas) switches the UI to touch controls.
+    if (e.pointerType === 'touch') {
+      if (ui.get().inputMode !== 'touch') ui.set({ inputMode: 'touch' });
+      return; // touch uses on-screen buttons
+    }
     if (!this.canvas || e.target !== this.canvas) return;
     const p = this.toGame(e.clientX, e.clientY);
     if (p) {
       this.pointer.x = p.x;
       this.pointer.y = p.y;
-    }
-    if (e.pointerType === 'touch') {
-      if (ui.get().inputMode !== 'touch') ui.set({ inputMode: 'touch' });
-      return; // touch uses on-screen buttons
     }
     if (ui.get().inputMode !== 'kbm') ui.set({ inputMode: 'kbm' });
     if (e.button === 0) {

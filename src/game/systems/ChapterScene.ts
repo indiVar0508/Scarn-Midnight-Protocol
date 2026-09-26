@@ -337,6 +337,13 @@ export abstract class ChapterScene extends Phaser.Scene {
     return idx;
   }
 
+  /** Fire-and-forget: scene-shutdown cancellation is expected and ignored, real errors are logged. */
+  detach(p: Promise<unknown>): void {
+    p.catch((e: unknown) => {
+      if (!(e instanceof Cancelled)) console.error(e);
+    });
+  }
+
   card(c: Parameters<typeof showCard>[0], ms = 2400): Promise<void> {
     return showCard(c, ms, this.signal);
   }
@@ -443,7 +450,7 @@ export abstract class ChapterScene extends Phaser.Scene {
     cm?.colorMatrix.reset();
     cm?.colorMatrix.saturate(-0.6);
     cm?.colorMatrix.contrast(0.2, true);
-    if (label) void this.card({ kind: 'stamp', title: label }, ms);
+    if (label) this.detach(this.card({ kind: 'stamp', title: label }, ms));
     await this.wait(ms);
     cm?.colorMatrix.reset();
     this.tweens.resumeAll();
@@ -484,7 +491,15 @@ export abstract class ChapterScene extends Phaser.Scene {
     const dt = Math.min(delta, 50) / 1000;
     this.interactCooldown -= delta;
     for (const a of this.actors) if (a.alive || a.updatesWhenDead) a.update(dt);
-    for (const fn of Array.from(this.updaters)) fn(dt);
+    for (const fn of Array.from(this.updaters)) {
+      try {
+        fn(dt);
+      } catch (e) {
+        // One broken per-frame callback must never freeze the whole chapter.
+        this.updaters.delete(fn);
+        console.error('updater removed after error', e);
+      }
+    }
     for (const a of this.actors) a.sync();
     this.updateInteract();
   }

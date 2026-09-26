@@ -235,6 +235,7 @@ export function paintMarket(w = 2400): HTMLCanvasElement {
   printerSign(g, 1100, 150, 'FOOD →', 24, 0.04);
   printerSign(g, 1500, 130, '0 DAYS SINCE LAST FORKLIFT INCIDENT', 16, -0.02, 420);
   printerSign(g, 2000, 160, 'PRODUCE (paper)', 20, 0.02);
+  printerSign(g, 930, 212, 'JELL-O SALE (one of them has a stapler in it)', 10, 0.03, 250);
   poster(g, 1780, 70, 120, 150, 'SALE', 'on 20lb bond', '#2d5fa0');
   // loading dock door
   rr(g, 1240, 150, 200, FLOOR_Y - 150, 2);
@@ -397,6 +398,7 @@ export function paintRink(w = 2600, bigCrowd = false): HTMLCanvasElement {
     ['SERENITY BY JAN', 'Candles', '#9b59b6'],
     ["POOR RICHARD'S", 'Pub', '#6a4a2e'],
     ['WUPHF.COM', 'Woof!', '#e67e22'],
+    ['SABRE', 'Printers. Now 40% less fire.', '#c0392b'],
   ];
   for (let i = 0, x = 20; x < w; i++, x += 300) {
     const [t, s, col] = ads[i % ads.length];
@@ -465,6 +467,7 @@ export function paintLocker(w = 1700): HTMLCanvasElement {
   g.fillRect(0, 150, w, 16);
   printerSign(g, 400, 90, 'HOME TEAM', 22, -0.02);
   printerSign(g, 1200, 90, 'NO SNAPPING TOWELS (this means you, Chad)', 14, 0.02, 360);
+  printerSign(g, 1560, 100, 'LOCKER 12: PRISON MIKE. DO NOT OPEN.', 10, -0.03, 200);
   poster(g, 800, 40, 110, 140, 'BELIEVE', 'in the puck', '#1f4fd1');
   baseboard(g, w, FLOOR_Y, '#555');
   perspectiveFloor(g, w, FLOOR_Y, '#9aa3ad', 'rgba(0,0,0,0.12)', 90);
@@ -490,6 +493,7 @@ export function paintClub(w = 2000): HTMLCanvasElement {
   rr(g, 380, 90, 180, 110, 2);
   inked(g, '#b88a52', 3);
   printerSign(g, 470, 130, 'PRETZEL DAY: FRIDAY', 11, -0.04, 150);
+  printerSign(g, 620, 262, 'FINER THINGS CLUB — MEMBERS ONLY', 10, 0.03, 180);
   // Neon sign
   g.shadowColor = '#ff4fd8';
   g.shadowBlur = 20;
@@ -639,7 +643,7 @@ export function paintTunnel(w = 1800, seed = 1, variant: 'pipes' | 'storage' | '
       for (let s = 0; s < 3; s++) {
         rr(g, x, 150 + s * 50, 180, 44, 2);
         inked(g, '#c9a26b', 2);
-        text(g, 'DUNDER MIFFLIN', x + 90, 172 + s * 50, { size: 12, color: '#6a4a20' });
+        text(g, (Math.floor(x / 300) + s) % 4 === 2 ? 'MICHAEL SCOTT PAPER CO.' : 'DUNDER MIFFLIN', x + 90, 172 + s * 50, { size: 12, color: '#6a4a20', maxW: 170 });
       }
     }
   }
@@ -662,6 +666,7 @@ export function paintHospital(w = 1400): HTMLCanvasElement {
   fluorescentGlow(g, w);
   printerSign(g, 300, 120, 'HOSPITAL', 36, -0.04);
   printerSign(g, 900, 110, 'Please clean the microwave. — Mgmt', 12, 0.03, 260);
+  printerSign(g, 780, 250, 'RABIES AWARENESS FUN RUN: sign up! (ask Michael)', 10, -0.02, 240);
   rr(g, 1080, 90, 110, 240, 4);
   inked(g, '#f4f4f0', 3);
   g.fillStyle = '#bbb';
@@ -696,6 +701,7 @@ export function paintOval(w = 1600): HTMLCanvasElement {
   text(g, '(the white house)', 360, 196, { size: 14, color: '#c0152a', font: FONT_HAND });
   windowBlinds(g, 1020, 90, 340, 190);
   printerSign(g, 760, 110, 'TOP SECRET MEETING — DO NOT BOOK', 12, 0.02, 280);
+  printerSign(g, 735, 165, 'Room also booked by: DUNDIES COMMITTEE', 9, -0.03, 190);
   baseboard(g, w, FLOOR_Y, '#6a5a4a');
   carpet(g, w, FLOOR_Y, '#5a6a7a', 9);
   // oval rug of carpet samples
@@ -810,6 +816,7 @@ export function paintBar(w = 1800): HTMLCanvasElement {
   ellipse(g, 200, 150, 12, 12);
   inked(g, '#2e7d4f', 2);
   poster(g, 1450, 60, 130, 170, 'KARAOKE', 'tuesdays', '#6a1b9a');
+  printerSign(g, 1110, 275, 'A CAPPELLA NIGHT: HERE COMES TREBLE', 9, 0.03, 150);
   printerSign(g, 1660, 110, 'NO DANCING*', 16, 0.05);
   text(g, '*unless it is the Scarn', 1660, 150, { size: 11, color: '#f1c94a', font: 'Arial' });
   baseboard(g, w, FLOOR_Y, '#2a1a10');
