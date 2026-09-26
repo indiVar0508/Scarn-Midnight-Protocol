@@ -5,6 +5,9 @@ import { save, unlockAll, newGame } from './state/save';
 import { settings } from './state/settings';
 import { autoSolve, tape } from './state/tape';
 import { input } from './game/systems/Input';
+import { music } from './audio/music';
+import { audio } from './audio/engine';
+import { buildChart, SPB } from './game/minigames/chart';
 
 /**
  * Test hooks for the automated playthrough (tools/qa/run.mjs) and for
@@ -19,6 +22,13 @@ export function installDebug(): void {
     settings,
     tape,
     input,
+    /** Rhythm-bot support: the chart, the song clock and the latency the judge applies. */
+    rhythm: {
+      chart: buildChart,
+      spb: SPB,
+      songTime: () => music.songTime(),
+      latency: () => (audio.ctx?.outputLatency || audio.ctx?.baseLatency || 0) + settings.get().rhythmOffsetMs / 1000,
+    },
     start(ch: number, beat: string | null = null) {
       newGame(ch);
       return Director.startChapter(ch, beat);

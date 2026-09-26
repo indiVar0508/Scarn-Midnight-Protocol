@@ -347,6 +347,7 @@ export class Ch05 extends ChapterScene {
     await this.say(L.m8);
     this.letterbox(false);
     await Director.overlay?.fade(true, 400);
+    this.guard(); // the chapter may have been stopped while the overlay played
     Director.overlay?.blackout(false);
   }
 

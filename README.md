@@ -15,7 +15,7 @@ clip-art, the ghost hangs on a visible string, and a goon always falls over half
 > is original or paraphrased. No footage, stills, episode audio, soundtrack, lyrics, actor
 > likenesses or actor voices are used.
 
-**Play:** see [Deployment](#deployment) for the live URL status.
+**Play:** https://threat-level-midnight.vercel.app
 Target first playthrough: 25–40 minutes. Desktop first; tablets and phones work with touch controls.
 
 ---
@@ -24,12 +24,12 @@ Target first playthrough: 25–40 minutes. Desktop first; tablets and phones wor
 
 | | |
 |---|---|
-| ![Main menu](docs/screenshots/01-menu.png) | ![Chapter 1: Cleanup on Aisle Five](docs/screenshots/02-aisle-five.png) |
-| ![Title slam](docs/screenshots/03-title.png) | ![Newspaper montage](docs/screenshots/04-newspaper.png) |
-| ![The President's video call](docs/screenshots/05-video-call.png) | ![Cherokee Jack's training montage](docs/screenshots/06-training.png) |
-| ![Reverse-audio tape deck puzzle](docs/screenshots/07-tape-deck.png) | ![Stealth under the stadium](docs/screenshots/08-stealth.png) |
-| ![Goldenface boss fight](docs/screenshots/09-goldenface.png) | ![Do the Scarn rhythm game](docs/screenshots/10-do-the-scarn.png) |
-| ![NHL All-Star hockey](docs/screenshots/11-hockey.png) | ![Mission report and Scarn Rating](docs/screenshots/12-stats.png) |
+| ![Main menu](docs/screenshots/01-menu.jpg) | ![Chapter 1: Cleanup on Aisle Five](docs/screenshots/02-aisle-five.jpg) |
+| ![Title slam](docs/screenshots/03-title.jpg) | ![Newspaper montage](docs/screenshots/04-newspaper.jpg) |
+| ![The President's video call](docs/screenshots/05-video-call.jpg) | ![Cherokee Jack's training montage](docs/screenshots/06-training.jpg) |
+| ![Reverse-audio tape deck puzzle](docs/screenshots/07-tape-deck.jpg) | ![Stealth under the stadium](docs/screenshots/08-stealth.jpg) |
+| ![Goldenface boss fight](docs/screenshots/09-goldenface.jpg) | ![Do the Scarn rhythm game](docs/screenshots/10-do-the-scarn.jpg) |
+| ![NHL All-Star hockey](docs/screenshots/11-hockey.jpg) | ![Mission report and Scarn Rating](docs/screenshots/12-stats.jpg) |
 
 ---
 
@@ -195,8 +195,23 @@ npm run preview      # serve the production build on :4173
   the camera filters.
 
 **Scripted QA:** with the dev server or preview running, run
-`npm run qa -- tools/qa/scenarios/ch01.mjs` (or `ch02`…`ch05`, or `late` for chapters 6–11;
-`FROM=9` starts `late` at a later chapter and `BASE=http://localhost:4173` targets the preview).
+`npm run qa -- tools/qa/scenarios/<name>.mjs`:
+
+| Scenario | Covers |
+|---|---|
+| `ch01` … `ch05` | Chapters 1–5 with real keyboard and mouse input |
+| `late` | Chapters 6–11 through the credits and stats (`FROM=9` starts at a later chapter) |
+| `rhythm` | Do the Scarn played by a key-pressing bot (`BOT=bad` tests fail → retry → assist) |
+| `hockey` | All-Star Game played by a key-pressing bot (`PERIOD1=1` stops after period 1) |
+| `boss` | Goldenface fight with real input (god mode on) |
+| `system` | Fresh-save locks, settings persistence, pause, restart checkpoint, chapter unlock |
+| `viewport` | `VP=1366x768` etc.: 16:9 scaling, no overflow or page scroll |
+| `touch` | `TOUCH=1 VP=844x390`: virtual stick and touch buttons |
+| `webgl` | Run with `--webgl`: filter-heavy moments on the WebGL renderer |
+| `readme` | Recaptures the story moments used in the README screenshots |
+
+`BASE=http://localhost:4173` targets `npm run preview`. The default Canvas renderer keeps
+headless runs fast; pass `--webgl` to test the WebGL path.
 Screenshots go to `tools/qa/out/`, which is ignored by git. The page exposes
 `window.__TLM__` test hooks: jump to a chapter, advance dialogue, read state, and set QA
 flags (`autoWin`, `skipFights`, `god`).
@@ -223,11 +238,13 @@ The project is a static Vite build and deploys to Vercel with the included `verc
   `/index.html`, so direct reloads of any URL work.
 - `Cache-Control: public, max-age=31536000, immutable` for hashed `/assets/*`, and a 7-day cache for `/voice/*`.
 
-**Deploy options:**
+**Live:** https://threat-level-midnight.vercel.app (Vercel project `threat-level-midnight`).
 
-1. **Git integration (recommended).** In Vercel, import or connect
-   `indiVar0508/Scarn-Midnight-Protocol`. The framework preset is detected as Vite and every
-   push redeploys.
+**Redeploying**
+
+1. **Git integration (current setup).** The Vercel project is connected to
+   `indiVar0508/Scarn-Midnight-Protocol`. Every push to the production branch builds and
+   deploys automatically; other branches get preview URLs.
 2. **CLI:**
    ```bash
    npm i -g vercel
@@ -235,7 +252,7 @@ The project is a static Vite build and deploys to Vercel with the included `verc
    vercel --prod
    ```
 
-Live URL status: see the latest deployment notes in the project's Vercel dashboard.
+The build needs no environment variables or secrets.
 
 ---
 
@@ -297,10 +314,15 @@ a few short paraphrased callbacks.
 
 - **Voices are synthetic.** They are clear and characterful but a bit flat compared with human
   performers. This was a deliberate choice, since no actor voices or clones may be used.
-- **Testing.** Automated playthroughs ran in headless Chromium. Chapters 1–5 were driven with
-  real inputs; chapters 6–11 were driven with QA assists (auto-win minigames, skip fights, god
-  mode) plus targeted real-input checks. Firefox and Safari (desktop and iOS) were not tested on
-  real devices. The Web Audio features used are standard, but Safari may behave differently.
+- **Testing.** Every chapter was played end to end by scripted Playwright runs in headless
+  Chromium (`tools/qa/scenarios`). Chapters 1–5 used real keyboard and mouse input. The rhythm
+  game, the hockey game and the Goldenface boss were also played by in-page bots sending real
+  key events: a good rhythm run passes first time at about 92%, a sloppy one fails, retries and
+  passes with the assist chart. The chapter 6 stealth rooms and some story beats were driven
+  with QA assists (teleport, skip fights). Saves, settings persistence, pause/restart
+  checkpoint, chapter unlocks, six viewport sizes and touch controls have their own scenarios.
+  Firefox and Safari (desktop and iOS) were not tested on real devices. The Web Audio features
+  used are standard, but Safari may behave differently.
 - **The Canvas renderer fallback** (used automatically when WebGL is unavailable) skips the
   camera filters: grayscale, sepia and soft focus.
 - **Touch** works for every chapter, but the game is designed for keyboard and mouse. Phones

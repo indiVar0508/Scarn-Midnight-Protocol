@@ -54,6 +54,20 @@ function Cards() {
   );
 }
 
+function BossBar() {
+  const boss = useUI((s) => s.boss);
+  const talking = useUI((s) => !!s.dialogue);
+  if (!boss || talking) return null;
+  return (
+    <div className="boss-bar" role="meter" aria-label={`${boss.name} health`} aria-valuenow={Math.round(boss.frac * 100)} aria-valuemin={0} aria-valuemax={100}>
+      <span className="boss-name">{boss.name}</span>
+      <div className="boss-track">
+        <div className="boss-fill" style={{ width: `${boss.frac * 100}%` }} />
+      </div>
+    </div>
+  );
+}
+
 function Hud() {
   const hud = useUI((s) => s.hud);
   const obj = useUI((s) => s.objective);
@@ -178,6 +192,7 @@ export function GameUI() {
   return (
     <div className={`layer ${set.highContrast ? 'hc' : ''} ${set.textSize === 'large' ? 'large-text' : ''}`}>
       <Hud />
+      <BossBar />
       {cap && set.subtitles && (
         <div className="caption" key={cap.id}>
           {cap.text}

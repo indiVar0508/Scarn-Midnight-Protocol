@@ -67,9 +67,10 @@ class DirectorImpl {
       }
     }
     this.currentKey = null;
-    ui.set({ objective: null, hint: null, hud: null, card: null, caption: null, touchLayout: 'none', letterbox: false });
+    ui.set({ objective: null, hint: null, hud: null, boss: null, card: null, caption: null, touchLayout: 'none', letterbox: false });
     this.overlay?.letterbox(false, 1);
     this.overlay?.blackout(false);
+    this.overlay?.reset();
   }
 
   async startChapter(n: number, beat: string | null = null): Promise<void> {

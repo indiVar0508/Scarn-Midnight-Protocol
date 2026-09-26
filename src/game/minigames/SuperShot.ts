@@ -60,11 +60,13 @@ export async function superShot(scene: ChapterScene, puckX: number, puckY: numbe
   input.endFrame();
   await scene.frameLoop((dt, done) => {
     t += dt;
-    const x = 640 + Math.sin(t * speed) * 520;
+    // start at the far left so leftover mashing can't release a free bullseye
+    const x = 640 + Math.sin(t * speed - Math.PI / 2) * 520;
     ret.setX(x);
     const off = Math.abs(x - hatchX);
     ret.setStrokeStyle(6, off < 90 ? 0x7dff8a : 0xffcf3a);
-    if (input.pressed('action') || input.pressed('fire') || (qa.autoWin && off < 20) || t > 12) {
+    const armed = t > 0.35;
+    if ((armed && (input.pressed('action') || input.pressed('fire'))) || (qa.autoWin && off < 20) || t > 12) {
       quality = t > 12 ? 0.5 : Math.max(0.35, 1 - off / 600);
       done();
     }

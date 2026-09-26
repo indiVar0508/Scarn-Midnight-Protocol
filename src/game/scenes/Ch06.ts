@@ -112,6 +112,7 @@ export class Ch06 extends ChapterScene {
       this.scarn.setMode('locked');
       sfx('door');
       await Director.overlay?.fade(true, 350);
+      this.guard(); // the chapter may have been stopped while the overlay played
       Director.overlay?.blackout(false);
     });
   }
@@ -297,6 +298,7 @@ export class Ch06 extends ChapterScene {
     this.scarn.setMode('locked');
     sfx('door');
     await Director.overlay?.fade(true, 350);
+    this.guard(); // the chapter may have been stopped while the overlay played
     Director.overlay?.blackout(false);
   }
 
@@ -456,7 +458,7 @@ export class Ch06 extends ChapterScene {
         this.scarn.hp = this.scarn.maxHp;
         this.scarn.invuln = 1;
       }
-      if (qa.skipFights && gf.phase < 4) gf.damage(3, 1, 0);
+      if (qa.skipFights && gf.phase < 4) gf.qaHit(3);
     };
     this.updaters.add(god);
     await this.waitUntil(() => finale && !this.busy);
@@ -465,6 +467,7 @@ export class Ch06 extends ChapterScene {
     for (const a of combat.enemies()) if (a !== gf) a.damage(99, 1, 0);
     // Goldenface cheats.
     gf.script(true);
+    ui.set({ boss: null });
     this.scarn.setMode('locked');
     this.letterbox(true);
     gf.rig.strike('aim');
@@ -500,6 +503,7 @@ export class Ch06 extends ChapterScene {
     sam.setAnim('down');
     await this.say(L.end5);
     await Director.overlay?.fade(true, 1200);
+    this.guard(); // the chapter may have been stopped while the overlay played
     this.letterbox(false);
   }
 

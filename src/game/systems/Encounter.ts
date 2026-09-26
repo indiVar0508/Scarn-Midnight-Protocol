@@ -38,6 +38,7 @@ export function wireRetake(scene: ChapterScene, scarn: Scarn): void {
       setFlag(key, take);
       music.stinger('fail');
       await Director.overlay?.clapper(take);
+      if (scene.signal.aborted) return; // quit to menu during the clapper
       Director.restartCheckpoint();
     })();
   };

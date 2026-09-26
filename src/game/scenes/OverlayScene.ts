@@ -105,6 +105,26 @@ export class OverlayScene extends Phaser.Scene {
     }
   }
 
+  /** Transient effect objects (title slam, clapper, flares) and a generation counter so
+   *  in-flight sequences stop when the Director changes chapter or quits to the menu. */
+  private gen = 0;
+  private transient = new Set<Phaser.GameObjects.GameObject>();
+
+  private keep<T extends Phaser.GameObjects.GameObject>(o: T): T {
+    this.transient.add(o);
+    o.once(Phaser.GameObjects.Events.DESTROY, () => this.transient.delete(o));
+    return o;
+  }
+
+  reset(): void {
+    this.gen++;
+    for (const o of Array.from(this.transient)) {
+      this.tweens.killTweensOf(o);
+      o.destroy();
+    }
+    this.transient.clear();
+  }
+
   letterbox(on: boolean, ms = 500): void {
     this.tweens.add({ targets: this.barTop, y: on ? 0 : -90, duration: ms, ease: 'Cubic.easeInOut' });
     this.tweens.add({ targets: this.barBot, y: on ? 630 : 720, duration: ms, ease: 'Cubic.easeInOut' });
@@ -143,14 +163,16 @@ export class OverlayScene extends Phaser.Scene {
 
   lensFlare(x = 1000, y = 120): void {
     if (settings.get().reducedFlashing) return;
-    const f = this.add.image(x, y, 'flare').setScale(1.4 / R).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0).setDepth(35);
+    const f = this.keep(this.add.image(x, y, 'flare').setScale(1.4 / R).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0).setDepth(35));
     const rings = [0.3, 0.55, 0.8].map((t) =>
-      this.add
-        .image(x + (640 - x) * t * 2, y + (360 - y) * t * 2, 'flarering')
-        .setScale((0.5 + t) / R)
-        .setBlendMode(Phaser.BlendModes.ADD)
-        .setAlpha(0)
-        .setDepth(35),
+      this.keep(
+        this.add
+          .image(x + (640 - x) * t * 2, y + (360 - y) * t * 2, 'flarering')
+          .setScale((0.5 + t) / R)
+          .setBlendMode(Phaser.BlendModes.ADD)
+          .setAlpha(0)
+          .setDepth(35),
+      ),
     );
     this.tweens.add({ targets: [f, ...rings], alpha: { from: 0, to: 0.9 }, duration: 180, yoyo: true, hold: 500, onComplete: () => [f, ...rings].forEach((o) => o.destroy()) });
     this.tweens.add({ targets: f, x: x - 160, duration: 900 });
@@ -158,12 +180,13 @@ export class OverlayScene extends Phaser.Scene {
 
   /** The THREAT / LEVEL / MIDNIGHT title slam. */
   async titleSlam(): Promise<void> {
+    const gen = this.gen;
     const words = ['THREAT', 'LEVEL', 'MIDNIGHT'];
     const objs: Phaser.GameObjects.GameObject[] = [];
     const bg = this.add.rectangle(0, 0, 1280, 720, 0x07030a, 0.92).setOrigin(0).setDepth(25);
-    objs.push(bg);
+    objs.push(this.keep(bg));
     const boom = this.add.image(640, 360, 'explosion_plain').setScale(0.2 / R).setAlpha(0).setDepth(26);
-    objs.push(boom);
+    objs.push(this.keep(boom));
     for (let i = 0; i < words.length; i++) {
       const t = this.add
         .text(640, 200 + i * 150, words[i], {
@@ -178,7 +201,7 @@ export class OverlayScene extends Phaser.Scene {
         .setScale(3)
         .setAlpha(0);
       t.setShadow(8, 10, '#000000', 0, true, true);
-      objs.push(t);
+      objs.push(this.keep(t));
       sfx('slam');
       if (i === 2) music.stinger('title');
       this.tweens.add({ targets: t, scale: 1, alpha: 1, duration: 200, ease: 'Back.easeOut' });
@@ -189,21 +212,24 @@ export class OverlayScene extends Phaser.Scene {
         this.lensFlare(1000, 140);
       }
       await new Promise((r) => this.time.delayedCall(i === 2 ? 1900 : 650, r));
+      if (gen !== this.gen) return;
     }
     const sub = this.add
       .text(640, 640, 'A  MICHAEL  SCARN  ADVENTURE', { fontFamily: '"Courier New", monospace', fontSize: '26px', color: '#ffffff' })
       .setOrigin(0.5)
       .setDepth(27)
       .setAlpha(0);
-    objs.push(sub);
+    objs.push(this.keep(sub));
     this.tweens.add({ targets: sub, alpha: 1, duration: 400 });
     await new Promise((r) => this.time.delayedCall(1600, r));
+    if (gen !== this.gen) return;
     await new Promise<void>((r) => this.tweens.add({ targets: objs, alpha: 0, duration: 500, onComplete: () => r() }));
     objs.forEach((o) => o.destroy());
   }
 
   /** "CUT! TAKE 2" clapperboard used for failure retries. */
   async clapper(take: number): Promise<void> {
+    const gen = this.gen;
     const objs: Phaser.GameObjects.GameObject[] = [];
     const bg = this.add.rectangle(0, 0, 1280, 720, 0x000000, 0.6).setOrigin(0).setDepth(25);
     const { c, g } = makeCanvas(520, 360);
@@ -228,12 +254,13 @@ export class OverlayScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(27)
       .setAlpha(0);
-    objs.push(bg, board, cut);
+    objs.push(this.keep(bg), this.keep(board), this.keep(cut));
     sfx('scratch');
     this.tweens.add({ targets: cut, alpha: 1, scale: { from: 2, to: 1 }, duration: 180 });
     this.tweens.add({ targets: board, alpha: 1, scale: 1, duration: 260, ease: 'Back.easeOut', delay: 150 });
     this.time.delayedCall(700, () => sfx('stamp'));
     await new Promise((r) => this.time.delayedCall(1700, r));
+    if (gen !== this.gen) return;
     await new Promise<void>((r) => this.tweens.add({ targets: objs, alpha: 0, duration: 300, onComplete: () => r() }));
     objs.forEach((o) => o.destroy());
   }

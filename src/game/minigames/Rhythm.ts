@@ -143,19 +143,6 @@ export async function doTheScarn(scene: ChapterScene, scarn: Rig, dancers: Rig[]
         }
       }
     }
-    // notes
-    for (let i = 0; i < chart.length; i++) {
-      if (judged[i]) continue;
-      const nt = chart[i].beat * SPB;
-      const dy = (nt - t) * SPEED;
-      const o = noteObjs[i];
-      if (dy < 760 && dy > -80) {
-        o.setVisible(true);
-        o.setY(HIT_Y - dy);
-      }
-      if (qa.autoWin && t >= nt) applyJudge(i, 'perfect');
-      else if (t - nt > (assist ? 0.26 : 0.16)) applyJudge(i, 'miss');
-    }
     // input: match each pressed lane to its nearest unjudged note
     LANES.forEach((l, lane) => {
       const pressed = lane === 2 ? input.pressed('action') || input.pressed('interact') : input.pressed(l.action);
@@ -179,6 +166,19 @@ export async function doTheScarn(scene: ChapterScene, scarn: Rig, dancers: Rig[]
         setDance(l.pose); // freestyle is allowed; it just isn't scored
       }
     });
+    // notes (after input, so a late-but-valid press in this frame is judged before the miss check)
+    for (let i = 0; i < chart.length; i++) {
+      if (judged[i]) continue;
+      const nt = chart[i].beat * SPB;
+      const dy = (nt - t) * SPEED;
+      const o = noteObjs[i];
+      if (dy < 760 && dy > -80) {
+        o.setVisible(true);
+        o.setY(HIT_Y - dy);
+      }
+      if (qa.autoWin && t >= nt) applyJudge(i, 'perfect');
+      else if (t - nt > (assist ? 0.26 : 0.16)) applyJudge(i, 'miss');
+    }
     // bar patrons join as the song (and your confidence) builds
     const progress = Phaser.Math.Clamp(t / endAt, 0, 1);
     const shouldJoin = Math.min(dancers.length, Math.floor(progress * (dancers.length + 1) * (0.55 + confidence * 0.7)));

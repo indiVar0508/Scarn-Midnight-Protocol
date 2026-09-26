@@ -10,8 +10,9 @@ import { ui } from '../../state/ui';
 type BossState = 'monologue' | 'move' | 'pattern' | 'rest' | 'scripted';
 
 /**
- * Goldenface, the boss. Readable cycles: he monologues (shielded), repositions,
- * fires one bullet pattern, then pauses to admire himself (big damage window).
+ * Goldenface, the boss. Readable cycles: he monologues, repositions and fires one
+ * bullet pattern behind his gold shield, then pauses to admire himself: the only
+ * window where the shield is down.
  */
 export class Goldenface extends Actor {
   combat: Combat;
@@ -31,7 +32,8 @@ export class Goldenface extends Actor {
     super(scene, scene.rig('goldenface', x, y, -1), x, y, 'enemy');
     this.combat = combat;
     this.target = target;
-    this.maxHp = settings.get().assist ? 22 : 34;
+    // Only the 'rest' window (admiring himself) is open, so he needs enough HP for several cycles.
+    this.maxHp = settings.get().assist ? 64 : 100;
     this.hp = this.maxHp;
     this.r = 30;
     this.rig.hold('goldgun', 2, 2, 0);
@@ -41,11 +43,12 @@ export class Goldenface extends Actor {
   }
 
   updateHud(): void {
-    ui.set({ hud: { hp: Math.max(0, (this.hp / this.maxHp) * 10), hpMax: 10, label: this.bossName } });
+    ui.set({ boss: { name: this.bossName, frac: Math.max(0, this.hp / this.maxHp) } });
   }
 
+  /** The shield is up at all times except while he stops to admire himself (the 'rest' window). */
   get shielded(): boolean {
-    return this.state === 'monologue';
+    return this.state !== 'rest' && this.state !== 'scripted';
   }
 
   damage(amount: number, dx: number, dy: number): boolean {
@@ -56,10 +59,19 @@ export class Goldenface extends Actor {
       this.scene.tweens.add({ targets: this.shield, alpha: 0.35, duration: 200 });
       return true; // absorbs the bullet
     }
-    const mult = this.state === 'rest' ? 2 : 1;
-    this.hp -= amount * mult;
     this.rig.flash(0xffffff, 60);
     this.moveBy(dx * 6, dy * 4);
+    this.applyHp(amount);
+    return true;
+  }
+
+  /** QA only: damage that ignores the shield. */
+  qaHit(amount: number): void {
+    if (this.alive && this.state !== 'scripted') this.applyHp(amount);
+  }
+
+  private applyHp(amount: number): void {
+    this.hp -= amount;
     this.updateHud();
     const ratio = this.hp / this.maxHp;
     if (this.phase === 1 && ratio < 0.62) {
@@ -72,7 +84,6 @@ export class Goldenface extends Actor {
       this.phase = 4;
       this.onPhase?.(4);
     }
-    return true;
   }
 
   update(dt: number): void {
@@ -94,8 +105,12 @@ export class Goldenface extends Actor {
           this.state = 'move';
           this.t = 0.9;
           const w = this.scene.world;
+          // stay inside the room AND fully on screen: a boss half out of frame is unreadable
+          const view = this.scene.cameras.main.worldView;
+          const x0 = Math.max(w.minX + 80, view.x + 140);
+          const x1 = Math.min(w.maxX - 80, view.right - 140);
           this.moveTo = {
-            x: Phaser.Math.Clamp(p.x + (Math.random() > 0.5 ? 1 : -1) * (280 + Math.random() * 120), w.minX + 80, w.maxX - 80),
+            x: Phaser.Math.Clamp(p.x + (Math.random() > 0.5 ? 1 : -1) * (280 + Math.random() * 120), x0, Math.max(x0, x1)),
             y: Phaser.Math.Clamp(p.y + (Math.random() - 0.5) * 200, w.minY + 20, w.maxY - 20),
           };
         }
@@ -151,7 +166,7 @@ export class Goldenface extends Actor {
         const max = [3, 2, 5, 11][this.pattern] + (this.phase >= 2 ? 1 : 0);
         if (this.shots >= max) {
           this.state = 'rest';
-          this.t = settings.get().assist ? 2.6 : 2;
+          this.t = settings.get().assist ? 3.2 : 2.4;
           this.rig.aimAngle = null;
           this.rig.setAnim('pose', 'handsHips');
           this.combat.icon(this, 'question', 1200);
@@ -180,6 +195,7 @@ export class Goldenface extends Actor {
 
   destroy(): void {
     this.shield.destroy();
+    ui.set({ boss: null });
     super.destroy();
   }
 }

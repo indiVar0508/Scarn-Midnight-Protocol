@@ -195,6 +195,7 @@ export class Ch04 extends ChapterScene {
     await this.say(L.m5);
     this.letterbox(false);
     await Director.overlay?.fade(true, 500);
+    this.guard(); // the chapter may have been stopped while the overlay played
     Director.overlay?.blackout(false);
   }
 
@@ -260,6 +261,7 @@ export class Ch04 extends ChapterScene {
         this.bark(L.coachSees);
         await this.wait(1400);
         await Director.overlay?.fade(true, 400);
+        this.guard(); // the chapter may have been stopped while the overlay played
         Director.restartCheckpoint();
       })());
     };

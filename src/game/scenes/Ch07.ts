@@ -66,6 +66,7 @@ export class Ch07 extends ChapterScene {
     this.speaker('nurse', nurse);
     await this.wait(700);
     await Director.overlay?.fade(false, 1200);
+    this.guard(); // the chapter may have been stopped while the overlay played
     Director.overlay?.blackout(false);
     this.letterbox(true);
     await this.say(L.n1);

@@ -235,7 +235,7 @@ export function paintMarket(w = 2400): HTMLCanvasElement {
   printerSign(g, 1100, 150, 'FOOD →', 24, 0.04);
   printerSign(g, 1500, 130, '0 DAYS SINCE LAST FORKLIFT INCIDENT', 16, -0.02, 420);
   printerSign(g, 2000, 160, 'PRODUCE (paper)', 20, 0.02);
-  printerSign(g, 930, 212, 'JELL-O SALE (one of them has a stapler in it)', 10, 0.03, 250);
+  printerSign(g, 930, 196, 'JELL-O SALE (one of them has a stapler in it)', 10, 0.03, 250);
   poster(g, 1780, 70, 120, 150, 'SALE', 'on 20lb bond', '#2d5fa0');
   // loading dock door
   rr(g, 1240, 150, 200, FLOOR_Y - 150, 2);
@@ -379,12 +379,6 @@ export function paintRink(w = 2600, bigCrowd = false): HTMLCanvasElement {
     g.fill();
   }
   crowd(g, 0, bigCrowd ? 60 : 110, w, bigCrowd ? 6 : 4, 3);
-  // jumbotron / banner
-  if (bigCrowd) {
-    rr(g, w / 2 - 220, 10, 440, 50, 4);
-    inked(g, '#111', 3);
-    text(g, 'NHL ALL-STAR GAME', w / 2, 36, { size: 30, color: '#ffcf3a' });
-  }
   // boards with sponsor ads
   const bTop = 270;
   g.fillStyle = '#f4f4f4';
@@ -432,6 +426,11 @@ export function paintRink(w = 2600, bigCrowd = false): HTMLCanvasElement {
   g.strokeStyle = 'rgba(31,79,209,0.7)';
   g.lineWidth = 4;
   g.stroke();
+  // centre-ice branding (kept off the top of the screen, where the HUD lives)
+  if (bigCrowd) {
+    text(g, 'ALL-STAR', w / 2 - 200, (top + H) / 2, { size: 30, color: 'rgba(31,79,209,0.35)', rot: -0.02 });
+    text(g, 'NHL ALL-STAR GAME', w / 2 + 230, (top + H) / 2, { size: 24, color: 'rgba(214,40,40,0.3)', rot: 0.02 });
+  }
   speckle(g, 0, top, w, H - top, 'rgba(255,255,255,0.5)', 900, 4, 3);
   g.strokeStyle = 'rgba(150,180,200,0.35)';
   const r = rng(6);

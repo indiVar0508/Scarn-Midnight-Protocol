@@ -45,6 +45,8 @@ export interface UIState {
   objective: string | null;
   hint: string | null;
   hud: { hp: number; hpMax: number; label?: string } | null;
+  /** Boss health (0..1), shown separately so it never fights with the player's COOL meter. */
+  boss: { name: string; frac: number } | null;
   toasts: Toast[];
   loading: string | null;
   inputMode: 'kbm' | 'pad' | 'touch';
@@ -75,6 +77,7 @@ export const ui = new Store<UIState>({
   objective: null,
   hint: null,
   hud: null,
+  boss: null,
   toasts: [],
   loading: null,
   inputMode: touchOnlyDevice() ? 'touch' : 'kbm',

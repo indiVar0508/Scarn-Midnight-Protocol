@@ -221,6 +221,7 @@ export class Ch08 extends ChapterScene {
     sfx('small_boom');
     this.grayscale(false);
     await Director.overlay?.fade(true, 500);
+    this.guard(); // the chapter may have been stopped while the overlay played
     Director.overlay?.blackout(false);
   }
 

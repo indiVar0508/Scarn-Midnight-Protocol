@@ -249,6 +249,7 @@ export class Ch01 extends ChapterScene {
     music.stop(0.3);
     Director.overlay?.blackout(true);
     await Director.overlay?.titleSlam();
+    this.guard(); // the chapter may have been stopped while the overlay played
     Director.overlay?.blackout(false);
     music.play('spy', { fade: 0.5 });
     const papers: [Paper, typeof L.n1 | null][] = [
@@ -267,12 +268,13 @@ export class Ch01 extends ChapterScene {
       const [p, line] = papers[i];
       const key = `news_${i}`;
       if (!this.textures.exists(key)) registerCanvas(this, key, paintNewspaper(p, i + 3));
-      const im = this.add.image(640, 360, key).setScrollFactor(0).setScale(0.05).setRotation(Math.PI * 6).setDepth(i);
+      // sits above the narration box so the small-print gags stay readable
+      const im = this.add.image(640, 288, key).setScrollFactor(0).setScale(0.05).setRotation(Math.PI * 6).setDepth(i);
       sfx('whoosh');
       if (p.photo === 'catherine') {
         music.play('sad', { fade: 1 });
       }
-      await this.tweenP({ targets: im, scale: 0.92, rotation: (Math.random() - 0.5) * 0.12, duration: 700, ease: 'Cubic.easeOut' });
+      await this.tweenP({ targets: im, scale: 0.8, rotation: (Math.random() - 0.5) * 0.12, duration: 700, ease: 'Cubic.easeOut' });
       sfx('slam');
       this.shake(120, 0.004);
       if (p.photo === 'catherine') {
@@ -286,6 +288,7 @@ export class Ch01 extends ChapterScene {
     }
     await this.wait(400);
     await Director.overlay?.fade(true, 700);
+    this.guard(); // the chapter may have been stopped while the overlay played
     Director.overlay?.blackout(false);
   }
 }

@@ -228,6 +228,7 @@ export class Ch10 extends ChapterScene {
       this.detach((async () => {
         await this.wait(1600);
         await Director.overlay?.clapper(take);
+        this.guard(); // the chapter may have been stopped while the overlay played
         Director.restartCheckpoint();
       })());
     };
