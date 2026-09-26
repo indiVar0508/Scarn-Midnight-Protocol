@@ -89,11 +89,12 @@ export class Ch10 extends ChapterScene {
     for (const [id, x] of [
       ['hostage', 560],
       ['hostage_b', 630],
-      ['hostage3', 700],
+      ['hostage_c', 700],
     ] as [string, number][]) {
       const r = this.rig(id, OX + x, hostagesFree ? 640 : 530, -1);
       r.setAnim('idle', hostagesFree ? 'victory' : 'tied');
-      if (id === 'hostage3') this.speaker('hostage3', r);
+      if (id === 'hostage_b') this.speaker('kevin', r);
+      if (id === 'hostage_c') this.speaker('pam', r);
       remote.push(r);
     }
     const cam = this.cameras.add(660, 96, 580, 330);
@@ -211,6 +212,7 @@ export class Ch10 extends ChapterScene {
     gf.destroy();
     this.scarn.setExpression('shock');
     await this.say(L.m4);
+    await this.say(L.m4b);
     this.scarn.setExpression('idle');
     this.letterbox(false);
     const total = settings.get().assist ? 30 : 40;
@@ -404,29 +406,31 @@ export class Ch10 extends ChapterScene {
     const sam = this.rig('samuel', 420, 620, 1);
     sam.setScrollFactor(0);
     this.speaker('samuel', sam);
-    const hs = (['hostage', 'hostage_b', 'hostage_c', 'hostage3'] as const).map((id, i) => {
-      const r = this.rig(id, 560 + i * 60, 520, -1);
+    const hs = (['hostage', 'hostage_b', 'hostage_c'] as const).map((id, i) => {
+      const r = this.rig(id, 580 + i * 70, 520, -1);
       r.setScrollFactor(0);
       r.setAnim('idle', 'tied');
       return r;
     });
     this.speaker('hostage', hs[0]);
-    this.speaker('hostage3', hs[3]);
+    this.speaker('kevin', hs[1]);
+    this.speaker('pam', hs[2]);
     sfx('door');
     this.tweens.add({ targets: cage, alpha: 0.2, duration: 500 });
     await this.say(L.sam1);
     // cheering arrives slightly late
     await this.wait(400);
-    hs.slice(0, 3).forEach((r, i) => {
+    // everyone runs for it. Except Kevin, who goes back for the chili.
+    [hs[0], hs[2]].forEach((r, i) => {
       r.setAnim('pose', 'victory');
       this.detach(walkRig(this, r, 1400 + i * 50, 600, 300, 'run'));
     });
     sfx('cheer_small');
     await this.say(L.hs1);
+    hs[1].setAnim('pose', 'victory');
     await this.say(L.hs3);
     await this.say(L.sam2);
-    unlockAchievement('hostage3');
-    this.detach(walkRig(this, hs[3], 1400, 600, 120));
+    this.detach(walkRig(this, hs[1], 1400, 600, 120));
     await this.wait(600);
   }
 

@@ -15,6 +15,7 @@ import { ctl } from '../systems/controlsText';
 import { unlockAchievement } from '../../state/save';
 import type { Rig } from '../entities/Rig';
 import { ensureProp } from '../art/props';
+import { R } from '../art/characters';
 
 const RW = 2600;
 const LW = 1700;
@@ -221,6 +222,9 @@ export class Ch04 extends ChapterScene {
     this.world.addWall(768, 460, 64, 16);
     this.prop('instacam', 800, 432).setDepth(471);
     this.prop('heater', 1620, 470);
+    // a mirror and a flag by the door. Chekhov's mirror. Chekhov's flag.
+    const mirror = this.prop('mirror', 440, 226).setDepth(-4);
+    const flag = this.prop('flag', 330, 470);
     const passImg = this.prop('pass', 1366, 300).setDepth(405);
     this.chad = this.rig('chad_towel', 1560, 500, -1);
     this.chad.setAnim('pose', 'sit');
@@ -353,6 +357,46 @@ export class Ch04 extends ChapterScene {
     sing.remove();
     if (disguised) unlockAchievement('disguise');
     scarn.setMode('locked');
+    // Chad comes out of the sauna at exactly the wrong moment.
+    this.letterbox(true);
+    await walkActor(this, scarn, 470, 560, 220);
+    this.chad.setAnim('idle');
+    this.chad.setPosition(900, 560).setFacing(-1);
+    await walkRig(this, this.chad, 620, 560, 260);
+    await this.say(L.chad3);
+    scarn.rig.setFacing(1);
+    await this.say(L.m7);
+    // the mirror
+    scarn.rig.setFacing(-1);
+    scarn.rig.strike('slapHit');
+    sfx('glass');
+    mirror.setTexture('mirror_broken');
+    this.shake(160, 0.006);
+    this.flash(0xffffff, 120, 0.4);
+    await this.wait(500);
+    scarn.rig.setFacing(1);
+    scarn.rig.setAnim('idle');
+    await this.say(L.m7a);
+    // the flag
+    flag.destroy();
+    scarn.rig.strike('heroic');
+    sfx('whoosh');
+    await this.say(L.chad4);
+    this.chad.setVisible(false);
+    ensureProp(this, 'flagburrito');
+    const burrito = this.add.image(620, 540, 'flagburrito').setScale(1 / R).setDepth(560);
+    sfx('slide_down');
+    await this.tweenP({ targets: burrito, x: 630, y: 470, angle: 360, duration: 700, ease: 'Quad.easeOut' });
+    lockers[5].setTexture('lockerOpen');
+    await this.tweenP({ targets: burrito, alpha: 0, scale: 0.6 / R, duration: 250 });
+    lockers[5].setTexture('locker');
+    sfx('door');
+    burrito.destroy();
+    scarn.rig.strike('fingerguns');
+    await this.say(L.m8);
+    await this.say(L.chad5);
+    scarn.rig.setAnim('idle');
+    this.letterbox(false);
     const sam = this.rig('samuel', 250, 620, -1);
     this.speaker('samuel', sam);
     await walkActor(this, scarn, 160, 600, 200);

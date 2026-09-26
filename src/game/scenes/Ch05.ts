@@ -8,7 +8,6 @@ import { runEncounter } from '../systems/Encounter';
 import { walkActor, walkRig } from '../systems/Moves';
 import { paintClub, paintKitchen, paintManor } from '../art/backgrounds';
 import { ensureProp } from '../art/props';
-import { R } from '../art/characters';
 import { CH05 as L } from '../../data/script/ch05';
 import { music } from '../../audio/music';
 import { sfx, ambience } from '../../audio/sfx';
@@ -244,6 +243,17 @@ export class Ch05 extends ChapterScene {
     this.jasmine.hold('mic', 0, 0, 0);
     await walkRig(this, this.jasmine, 1760, 474, 130);
     this.jasmine.setFacing(-1);
+    // Jasmine won't talk. So Scarn does what he does best: makes a woman fall in love with him.
+    await this.say(L.jz1);
+    await this.choose(null, [
+      { label: '"I\'m not a cop. I\'m a lover."', line: L.f1 },
+      { label: '"We\'ve both been hurt by Goldenface."', line: L.f2 },
+      { label: '[Serenade her. Badly.]', line: L.f3 },
+    ]);
+    music.stinger('romance');
+    await this.say(L.jz2);
+    await this.say(L.m9);
+    await this.say(L.jz3);
     this.jasmine.strike('sing');
     sfx('applause');
     await this.say(L.j1);
@@ -314,26 +324,13 @@ export class Ch05 extends ChapterScene {
     this.scarn.rig.strike('kneel');
     this.scarn.rig.setExpression('shock');
     this.bark(L.m6);
+    // one very dramatic slow-motion fall
+    this.jasmine.stiffness = 4;
     await fall();
-    // the expensive shot, replayed from several angles
-    for (const [label, zoom] of [
-      ['INSTANT REPLAY', 1.3],
-      ['REPLAY (ANGLE 2)', 1.7],
-      ['REPLAY (SLOW-MO)', 2.1],
-    ] as [string, number][]) {
-      this.detach(this.card({ kind: 'stamp', title: label }, 1100));
-      this.cameras.main.centerOn(this.jasmine.x + (zoom > 2 ? 0 : 60), this.jasmine.y - 80);
-      this.cameras.main.setZoom(zoom);
-      this.jasmine.setAnim('pose', 'stand');
-      this.jasmine.snap();
-      await this.wait(200);
-      this.jasmine.stiffness = zoom > 2 ? 4 : 16;
-      await fall();
-    }
     this.jasmine.stiffness = 16;
-    this.cameras.main.setZoom(1);
-    const z = this.add.image(this.jasmine.x - 40, this.jasmine.y - 70, 'zzz').setScale(1 / R).setDepth(9000);
-    this.tweens.add({ targets: z, y: z.y - 20, alpha: 0.4, duration: 900, yoyo: true, repeat: -1 });
+    const unsoft = this.softFocus();
+    await this.say(L.j3);
+    unsoft();
     this.cameras.main.centerOn(1400, 420);
     const sam = this.rig('samuel', 1120, 640, 1);
     this.speaker('samuel', sam);

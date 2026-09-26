@@ -19,6 +19,7 @@ export class Ch09 extends ChapterScene {
   scarn!: Scarn;
   samuel!: Samuel;
   billy!: Rig;
+  kid!: Rig;
   patrons: Rig[] = [];
 
   constructor() {
@@ -63,6 +64,9 @@ export class Ch09 extends ChapterScene {
         return r;
       });
       this.speaker('bartender', this.patrons[6]);
+      this.speaker('bachelorette', this.patrons[0]);
+      this.kid = this.rig('kid', 1440, 520, 1);
+      this.speaker('kid', this.kid);
       this.cameras.main.setBounds(0, 0, W, 720);
       const stop = ambience('bar', 0.7);
       this.events.once('shutdown', stop);
@@ -96,7 +100,8 @@ export class Ch09 extends ChapterScene {
     this.scarn.rig.setAnim('idle');
     this.scarn.place(900, 560);
     this.scarn.setMode('explore');
-    this.objective('Play G9 on the jukebox');
+    this.objective('The kid by the jukebox is waiting for your nod. (G9.)');
+    this.interact({ x: 720, y: 560, r: 90, label: 'Talk to the bachelorette party', once: true, onUse: () => this.say(L.bach1) });
     this.interact({ x: 300, y: 460, r: 120, label: 'Watch TV', once: true, onUse: () => this.say(L.tv) });
     this.interact({ x: 190, y: 500, r: 90, label: 'Talk to patron', once: true, onUse: () => this.say(L.patronA) });
     this.prop('dundie', 1300, 612).setDepth(641);
@@ -115,9 +120,18 @@ export class Ch09 extends ChapterScene {
       },
     });
     let played = false;
-    this.interact({ x: 1560, y: 470, r: 130, label: 'Press G9', once: true, onUse: async () => void (played = true) });
+    this.interact({ x: 1480, y: 540, r: 130, label: 'Nod at the kid', once: true, onUse: async () => void (played = true) });
     await this.waitUntil(() => played);
     this.scarn.setMode('locked');
+    this.letterbox(true);
+    await walkRig(this, this.kid, 1540, 470, 160);
+    await this.say(L.kid1);
+    this.scarn.rig.setExpression('hurt');
+    await this.say(L.mNo);
+    this.scarn.rig.setExpression('idle');
+    this.billy.strike('victory');
+    await this.say(L.b6);
+    this.kid.strike('point');
     sfx('jukebox');
     music.stop(0.5);
     // flashback
@@ -134,7 +148,7 @@ export class Ch09 extends ChapterScene {
     cat.destroy();
     this.sepia(false);
     unsoft();
-    await this.say(L.b6);
+    this.letterbox(false);
   }
 
   private async dance(): Promise<void> {
@@ -160,7 +174,7 @@ export class Ch09 extends ChapterScene {
       [1060, 520],
       [1000, 470],
     ];
-    const dancers = [...this.patrons, this.billy];
+    const dancers = [...this.patrons, this.billy, ...(this.kid?.active ? [this.kid] : [])];
     const onJoin = (i: number) => {
       const d = dancers[i];
       const [x, y] = spots[i % spots.length];

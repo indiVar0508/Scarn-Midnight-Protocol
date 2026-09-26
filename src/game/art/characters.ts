@@ -222,6 +222,10 @@ export const SPECS: Record<string, CharSpec> = {
     skin: SKIN.d, hair: '#101010', hairStyle: 'buzz', jaw: 0.9, nose: 1.1, brows: 'flat', eyes: 'normal',
     outfit: 'suit', top: '#6a6a70', shirt: '#ffffff', tie: '#2a4a8a', tieStyle: 'tie', pants: '#6a6a70', shoes: '#111111', bulk: 1.1, scale: 1.05,
   },
+  kid: {
+    skin: SKIN.a, hair: '#6a4a2a', hairStyle: 'cap', jaw: 0.2, nose: 0.8, brows: 'arched', eyes: 'wide',
+    outfit: 'tee', top: '#3a8ad0', top2: '#2a6aa8', pants: '#2a3040', shoes: '#ffffff', scale: 0.68, bulk: 0.85,
+  },
   secret: {
     skin: SKIN.c, hair: '#111111', hairStyle: 'buzz', jaw: 0.9, nose: 1, brows: 'flat', eyes: 'normal', glasses: 'sun',
     outfit: 'suit', top: '#111111', shirt: '#ffffff', tie: '#e8b83a', tieStyle: 'tie', pants: '#111111', shoes: '#050505', accessory: 'lanyard', bulk: 1.15,

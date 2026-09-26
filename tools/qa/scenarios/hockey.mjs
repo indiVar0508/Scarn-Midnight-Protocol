@@ -102,7 +102,7 @@ export default async function (t) {
     };
     const save_beat = () => T.save.get().beat;
     window.__goals = [];
-    const wrap = setInterval(() => {
+    setInterval(() => {
       const h = T.scene() && T.scene().hockey;
       if (h && h.onGoal && !h.onGoal.__wrapped) {
         const orig = h.onGoal;

@@ -823,6 +823,17 @@ kbd {
   margin-bottom: 0.45cqw;
 }
 
+.dialogue .who .actor {
+  font-family: inherit;
+  font-size: 1.05cqw;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: rgba(255, 255, 255, 0.5);
+  margin-left: 0.9cqw;
+  font-style: italic;
+  vertical-align: 0.25cqw;
+}
+
 .dialogue .text {
   font-size: 2.05cqw;
   line-height: 1.32;
@@ -1529,4 +1540,84 @@ kbd {
 .hc .boss-bar {
   background: #000;
   border-color: #fff;
+}
+
+/* post-credits (Ferris Bueller style) */
+.postcredits {
+  background: #000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.pc-actor {
+  position: absolute;
+  bottom: 12cqw;
+  display: flex;
+  align-items: center;
+  gap: 1.6cqw;
+  animation: pc-pop 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.pc-actor.left {
+  left: 8cqw;
+}
+
+.pc-actor.right {
+  right: 8cqw;
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.pc-actor img {
+  width: 16cqw;
+  height: 16cqw;
+  border-radius: 0.6cqw;
+  border: 0.25cqw solid #fff;
+  image-rendering: auto;
+}
+
+.pc-line {
+  max-width: 44cqw;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5cqw;
+  font-size: 2.3cqw;
+  color: #fff;
+}
+
+.pc-line b {
+  font-family: var(--title);
+  letter-spacing: 0.08em;
+  font-weight: 400;
+  font-size: 1.8cqw;
+}
+
+.pc-noon {
+  position: absolute;
+  top: 10cqw;
+  left: 50%;
+  transform: translateX(-50%) rotate(-4deg);
+  font-family: var(--title);
+  font-size: 6cqw;
+  color: #7dff8a;
+  border: 0.4cqw solid #7dff8a;
+  padding: 0.4cqw 2cqw;
+  letter-spacing: 0.06em;
+  animation: pc-stamp 0.25s ease-out;
+}
+
+@keyframes pc-pop {
+  from {
+    transform: translateY(8cqw) scale(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes pc-stamp {
+  from {
+    transform: translateX(-50%) rotate(-4deg) scale(2.2);
+    opacity: 0;
+  }
 }

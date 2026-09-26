@@ -44,6 +44,43 @@ function paintExplosion(g: CanvasRenderingContext2D, label: boolean): void {
     if (label) text(g, 'KA-BOOM', 150, 150, { size: 42, color: '#fff', stroke: '#b01010', strokeW: 6, rot: -0.12 });
   }
 
+function paintMirror(g: CanvasRenderingContext2D, broken: boolean): void {
+  rr(g, 4, 4, 82, 112, 3);
+  inked(g, '#8a8f96', 3);
+  const gr = g.createLinearGradient(8, 8, 80, 110);
+  gr.addColorStop(0, '#dfeaf2');
+  gr.addColorStop(0.5, '#b9cad8');
+  gr.addColorStop(1, '#e8f0f6');
+  g.fillStyle = gr;
+  g.fillRect(10, 10, 70, 100);
+  g.strokeStyle = 'rgba(255,255,255,0.8)';
+  g.lineWidth = 3;
+  g.beginPath();
+  g.moveTo(18, 30);
+  g.lineTo(34, 14);
+  g.moveTo(20, 44);
+  g.lineTo(46, 18);
+  g.stroke();
+  if (!broken) return;
+  // the cracks radiate from where Scarn's elbow landed
+  g.strokeStyle = 'rgba(40,50,60,0.85)';
+  g.lineWidth = 1.5;
+  const cx = 48;
+  const cy = 56;
+  for (let i = 0; i < 11; i++) {
+    const a = (i / 11) * Math.PI * 2 + 0.3;
+    g.beginPath();
+    g.moveTo(cx, cy);
+    const r1 = 14 + (i % 3) * 8;
+    g.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+    g.lineTo(cx + Math.cos(a + 0.12) * 60, cy + Math.sin(a + 0.12) * 60);
+    g.stroke();
+  }
+  g.beginPath();
+  g.arc(cx, cy, 10, 0, Math.PI * 2);
+  g.stroke();
+}
+
 const P: Record<string, PropDef> = {
   // ------------------------------------------------------------ weapons/hand items
   pistol: [34, 22, 6, 10, (g) => {
@@ -643,6 +680,47 @@ const P: Record<string, PropDef> = {
     g.lineTo(104, 8);
     g.lineTo(104, 86);
     g.stroke();
+  }],
+  // Eggs a la Scarn
+  fryingpan: [90, 34, 10, 17, (g) => {
+    g.fillStyle = '#2a2a2a';
+    g.fillRect(44, 14, 44, 7);
+    ellipse(g, 26, 17, 24, 14);
+    inked(g, '#3a3a3a', 3);
+    ellipse(g, 20, 16, 8, 6);
+    inked(g, '#ffffff', 1.5);
+    ellipse(g, 20, 16, 3, 3);
+    inked(g, '#ffc21a', 1);
+    ellipse(g, 32, 19, 7, 5);
+    inked(g, '#ffffff', 1.5);
+    ellipse(g, 32, 19, 2.5, 2.5);
+    inked(g, '#ffc21a', 1);
+  }],
+  mirror: [90, 120, 45, 118, (g) => paintMirror(g, false)],
+  mirror_broken: [90, 120, 45, 118, (g) => paintMirror(g, true)],
+  // Chad, rolled up in the American flag. Tasteful. Patriotic.
+  flagburrito: [150, 60, 75, 58, (g) => {
+    rr(g, 10, 10, 130, 44, 20);
+    g.save();
+    g.clip();
+    for (let i = 0; i < 7; i++) {
+      g.fillStyle = i % 2 ? '#f4f4f4' : '#c8242c';
+      g.fillRect(10, 10 + i * 6.3, 130, 6.3);
+    }
+    g.fillStyle = '#1f3a8a';
+    g.fillRect(10, 10, 46, 22);
+    g.fillStyle = '#ffffff';
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) g.fillRect(14 + c * 8, 13 + r * 6, 2, 2);
+    g.restore();
+    rr(g, 10, 10, 130, 44, 20);
+    g.strokeStyle = INK;
+    g.lineWidth = 3;
+    g.stroke();
+    // Chad's feet sticking out, still in sauna socks
+    ellipse(g, 140, 26, 8, 6);
+    inked(g, '#f2c29b', 2);
+    ellipse(g, 140, 40, 8, 6);
+    inked(g, '#f2c29b', 2);
   }],
   locker: [60, 170, 30, 168, (g) => {
     rr(g, 3, 3, 54, 164, 2);

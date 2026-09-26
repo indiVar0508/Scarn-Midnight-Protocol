@@ -75,7 +75,7 @@ export default async function (t) {
   if (await at(9)) {
   await t.skipTalk(60000, (s) => s.chapter === 9 && s.objective && s.objective.includes('G9') && !s.busy);
   await t.shot('ch9-bar');
-  await go(1560, 480, 'jukebox');
+  await go(1470, 560, 'jukebox kid');
   await t.skipTalk(30000, (s) => s.beat === 'dance' && !s.dialogue);
   await t.wait(9000);
   await t.shot('ch9-dance');

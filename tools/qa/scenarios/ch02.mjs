@@ -14,10 +14,12 @@ export default async function (t) {
   await t.wait(800);
   await t.shot('photo');
   await t.skipTalk(8000);
-  await t.eval(() => window.__TLM__.teleport(1150, 560));
+  // head out the front door to see the President
+  await t.eval(() => window.__TLM__.teleport(1480, 520));
   await t.wait(300);
+  t.log('door hint', (await t.state()).hint);
   await t.key('KeyE');
-  await t.waitFor((s) => s.beat === 'call', 8000);
+  await t.skipTalk(8000, (s) => s.beat === 'call');
   await t.skipTalk(6000, (s) => !!s.dialogue);
   await t.wait(800);
   await t.shot('call');

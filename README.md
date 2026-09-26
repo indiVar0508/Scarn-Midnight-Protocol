@@ -9,6 +9,14 @@ to the puck that goes into space. The game itself is built to play well; the mov
 deliberately cheap. Office conference rooms stand in for the Oval Office, the explosions are
 clip-art, the ghost hangs on a visible string, and a goon always falls over half a second late.
 
+And like the real thing, it is Michael's movie starring his coworkers, who are all still very much
+themselves. Samuel L. Chang is Dwight insisting he is not a robot. Goldenface is Jim, reading his
+villain lines off a cue card. President Jackson is Darryl, extremely chill about being evil.
+Cherokee Jack is Creed, Jasmine Windsong is Jan, Billy is Andy (Cornell), the hostages are Pam,
+Kevin and Toby, and Stanley narrates like he is being paid by the word. Scarn talks exactly like
+Michael: mangled idioms, big words used slightly wrong, puns he is very proud of, and a
+"that's what she said" at the worst possible moment.
+
 > **Unofficial, non-commercial fan project.** *The Office* and *Threat Level Midnight* belong to
 > their respective rights holders (NBCUniversal and the show's producers). This project is not
 > affiliated with or endorsed by them. Every piece of art, music, sound, voice and dialogue here
@@ -39,23 +47,24 @@ Every story beat in the movie is something you *do*:
 
 | # | Chapter | What you play |
 |---|---|---|
-| 1 | **Cleanup on Aisle Five** | A tutorial shoot-out in a "supermarket" that is clearly a paper warehouse: move, aim, shoot, dodge-roll, interact. Then a freeze frame, the THREAT / LEVEL / MIDNIGHT title slam and a homemade newspaper montage. |
-| 2 | **One Last Mission** | Retired Scarn, Samuel, and President Jackson on a laptop "video phone". Pick comic responses, then settle it with a coin-flip microgame (best two out of three... out of five). |
+| 1 | **Cleanup on Aisle Five** | A tutorial shoot-out in a "supermarket" that is clearly a paper warehouse: move, aim, shoot, dodge-roll, interact. Scarn winds up his big one-liner and the store PA steals it, so he saves it for later. Then the THREAT / LEVEL / MIDNIGHT title slam and Stanley narrating the newspaper montage. |
+| 2 | **One Last Mission** | Samuel wakes a hungover Scarn. He's retired, until he hears it's Goldenface: "This makes it personal." In the Oval Office (a conference room with a flag), the President, who owns the stadium, briefs him: "We're at Threat Level... Midnight." Pick comic responses, then settle it with a best-of-seven coin flip and "Looks like there's gonna be a cleanup on aisle five." |
 | 3 | **Cherokee Jack** | A training montage of five 15–30 second minigames: mop the ice, stick handling, target shooting, obstacle skating, reflexes. Scarn declares himself elite whatever you score. |
-| 4 | **The Tryout** | Stride-timing speed-skating race, Goldenface crashes it, a skate-and-shoot fight, disqualification, then locker-room stealth with a disguise and a photo swap on the All-Star pass. |
-| 5 | **The Funky Cat** | Jazz-club exploration and clues, Jasmine's performance, and a tape-deck puzzle: record, replay, reverse, fix the speed and read the waveform. A visual solution path means it's fully solvable with sound off. |
-| 6 | **Under the Stadium** | The biggest level. Vision-cone stealth, security cameras, Samuel's hacking, keycards, chattering-teeth distraction gadgets, sneak takedowns, the hostages, then a three-phase Goldenface boss ("THE BOMB IS INSIDE THE PUCK"). |
-| 7 | **The Hospital** | Mash to sit up while every monitor (a laptop) begs you to stop. |
-| 8 | **The Betrayal** | The Oval Office is a conference room with a flag in it. The President is in on it. Auto-run hallway escape. Parkour. |
-| 9 | **Do the Scarn** | Billy's bar, G9 on the jukebox, and a five-lane rhythm game to an original song with combo and confidence meters. The whole bar joins in. |
+| 4 | **The Tryout** | Stride-timing speed-skating race, Goldenface (Jim, clearly reading a cue card) crashes it, a skate-and-shoot fight, disqualification, then locker-room stealth with a disguise and a photo swap on the All-Star pass. It ends the movie's way, kept PG: a smashed mirror and Chad rolled up in the American flag. |
+| 5 | **The Funky Cat** | Jazz-club exploration and clues. Jasmine won't talk, so Scarn makes her fall in love with him (pick your pickup line). Her song hides a message: record, replay, reverse, fix the speed and read the waveform to decode it. A visual solution path means it's fully solvable with sound off. Then a blow dart, and last words about her candles. |
+| 6 | **Under the Stadium** | The biggest level. Vision-cone stealth, security cameras, Samuel's hacking, keycards, chattering-teeth distraction gadgets, sneak takedowns, and the hostages (Pam, Kevin, Toby). Goldenface shoots Toby to show he means business, and Michael replays the most expensive shot in the movie from four angles. Goldenface explains the gold factory, "THE BOMB IS INSIDE THE PUCK", a three-phase boss, and the forgive-me offer that Scarn answers with "Go puck yourself!" |
+| 7 | **The Hospital** | The nurse (Pam's mom) leans in to check that everything is working properly, and the heart monitor (a laptop) goes wild. Then mash to sit up while every indicator begs you to stop. |
+| 8 | **The Betrayal** | Scarn tells the President the bomb is in the puck. The President makes a quick call and brings in Goldenface and his assassin. Auto-run hallway escape (parkour), then Scarn in the watering-can rain wondering where it all went wrong. |
+| 9 | **Do the Scarn** | Billy (Andy) gets a kid to put G9 on the jukebox. Scarn hasn't done that dance since his wife died. A five-lane rhythm game to an original song with combo and confidence meters, and the whole bar joins in, bachelorette party included. |
 | 10 | **NHL All-Star Game** | Arcade hockey (skate, carry, pass, steal, check, charged slapshot), a bomb-puck keep-away, radio cutaways to Samuel, Cherokee Jack's very cheap ghost, a charge-and-aim super shot, and the puck's flight into space. |
-| 11 | **Scarn Manor** | Epilogue. Samuel is definitely not an android. The phone rings. Freeze frame. Credits, then the Mission Report. |
+| 11 | **Scarn Manor** | Breakfast in the glow of the trophy ("somebody should make a movie about this"). Samuel is definitely not an android. The phone rings: it's the President, who forgot he was evil, with a new mission. Freeze frame, credits, the full cut's post-credits bit ("Threat Level Noon"), then the Mission Report. |
 
 **Also in the game**
 - **Mission Report**: mission time, shots, accuracy, hockey, training, dance, enemies, dramatic poses, confidence level, beets, and a **Scarn Rating** that never goes below A. Michael designed it.
 - **Screening Mode** (on by default, toggle in Settings): short intermissions of stylized office silhouettes watching the movie, with a camera glance and polite applause.
 - **12 achievements**, some hidden (there are five beets hidden across the chapters).
 - **Saves** go to `localStorage` with a checkpoint at every beat. **Chapter Select** unlocks chapters as you complete them.
+- **The cast, credited.** Every name plate shows who is playing the part (Samuel L. Chang, *played by Dwight Schrute*), and when a take goes wrong, Michael yells a director's note through his megaphone before the "CUT! TAKE 2" clapper.
 - **Office references** throughout the sets: WUPHF, Schrute Farms, Serenity by Jan, Vance Refrigeration, Poor Richard's, Sabre, the Dundies, Pretzel Day, a stapler in Jell-O, Prison Mike's locker, the Rabies Awareness Fun Run, the Finer Things Club, Here Comes Treble, Michael Scott Paper Company, and more.
 
 ---
@@ -304,7 +313,7 @@ a few short paraphrased callbacks.
 | All character art, props, backgrounds, newspapers, portraits, UI | Original, drawn procedurally with Canvas 2D in `src/game/art/` | This project |
 | All music (21 cues) | Original compositions, synthesized live with Web Audio (`src/audio/songs.ts`) | This project |
 | All sound effects | Synthesized with Web Audio (`src/audio/sfx.ts`) | This project |
-| Voice acting (389 lines) | Generated offline with [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) via kokoro-onnx, using stock synthetic voices, then ffmpeg effects | Kokoro model: Apache-2.0. The voices are generic synthetic voices, not cloned from or modelled on any actor. |
+| Voice acting (446 lines) | Generated offline with [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) via kokoro-onnx. Each character is a blend of stock Kokoro voices, pitch-shifted and EQ'd toward the register and energy of the Dunder Mifflin employee playing the role (deep and slow for Stanley, bright for Andy, clipped and nasal for Dwight), then given ffmpeg scene effects | Kokoro model: Apache-2.0. No recording of any actor was used, sampled or cloned. |
 | Fonts: Bebas Neue, Barlow Condensed, Permanent Marker, Playfair Display, Special Elite, VT323 | Google Fonts, self-hosted in `public/fonts/` | SIL Open Font License 1.1 (see `public/fonts/LICENSES.md`) |
 | Engine and libraries | Phaser, React, Vite and others | MIT |
 
@@ -312,8 +321,10 @@ a few short paraphrased callbacks.
 
 ## Known limitations
 
-- **Voices are synthetic.** They are clear and characterful but a bit flat compared with human
-  performers. This was a deliberate choice, since no actor voices or clones may be used.
+- **Voices are synthetic.** Each one is cast and tuned to evoke its actor's register, pace and
+  energy, but they are not the actors' voices and never will be: cloning a real person's voice
+  without consent is off the table. Delivery is clearer than it is funny; the jokes are carried by
+  the writing and the timing.
 - **Testing.** Every chapter was played end to end by scripted Playwright runs in headless
   Chromium (`tools/qa/scenarios`). Chapters 1–5 used real keyboard and mouse input. The rhythm
   game, the hockey game and the Goldenface boss were also played by in-page bots sending real

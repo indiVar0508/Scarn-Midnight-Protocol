@@ -7,7 +7,8 @@ import { Samuel } from '../entities/Samuel';
 import { Goon } from '../entities/Goon';
 import { wireRetake } from '../systems/Encounter';
 import { walkActor, walkRig } from '../systems/Moves';
-import { paintHallway, paintOval, paintStreet } from '../art/backgrounds';
+import { paintHallway, paintStreet } from '../art/backgrounds';
+import { dressOvalOffice } from './sets';
 import { ensureProp } from '../art/props';
 import { R } from '../art/characters';
 import { CH08 as L } from '../../data/script/ch08';
@@ -42,19 +43,7 @@ export class Ch08 extends ChapterScene {
 
   private async oval(): Promise<void> {
     this.useSet('oval', () => {
-      this.world = new World(OW, 410, 690);
-      this.background('bg_oval', () => paintOval(OW));
-      this.prop('flag', 640, 440);
-      this.prop('seal', 900, 200, 0.9).setRotation(0.14).setDepth(-5);
-      this.prop('desk', 900, 520);
-      this.world.addWall(790, 470, 220, 50);
-      this.prop('stapler', 820, 426).setDepth(521);
-      this.prop('trophy', 990, 440).setDepth(521).setScale(0.35);
-      this.prop('filing', 1300, 420);
-      this.world.addWall(1265, 400, 70, 25);
-      this.prop('confchair', 500, 600);
-      this.prop('confchair', 1150, 640);
-      this.cameras.main.setBounds(0, 0, OW, 720);
+      dressOvalOffice(this, OW);
       this.president = this.rig('president', 900, 470, -1);
       this.speaker('president', this.president);
       this.scarn = new Scarn(this, this.rig('scarn', 150, 600), 150, 600);
@@ -99,6 +88,12 @@ export class Ch08 extends ChapterScene {
       { label: '"I told the Scranton Times."', line: L.c3 },
     ]);
     await this.say(L.p4);
+    this.president.hold('phone_handset', 0, 0, 0);
+    this.president.strike('phone');
+    sfx('pickup');
+    await this.say(L.pcall);
+    this.president.hold(null);
+    this.president.setAnim('idle');
     // reveal
     const gf = this.rig('goldenface', 1300, 470, -1);
     this.speaker('goldenface', gf);
@@ -110,6 +105,11 @@ export class Ch08 extends ChapterScene {
     await this.crashZoom(gf.x, gf.y - 110, 1.5);
     await this.say(L.gf1);
     await this.zoomTo(1, 200);
+    const assassin = this.rig('goon', 1420, 520, -1);
+    this.speaker('assassin', assassin);
+    await walkRig(this, assassin, 1250, 580, 180);
+    assassin.gesture('wave', 900);
+    await this.say(L.as1);
     this.cameras.main.startFollow(this.scarn.rig, true, 0.09, 0.09, 0, 60);
     this.scarn.rig.strike('point');
     await this.say(L.m3);
@@ -264,7 +264,7 @@ export class Ch08 extends ChapterScene {
     const said = new Set<number>();
     const beats: [number, () => Promise<void>][] = [
       [400, () => this.say(L.r1)],
-      [700, () => this.sayAll([L.r2, L.r3])],
+      [700, () => this.sayAll([L.r2, L.r3, L.r3b])],
       [1050, () => this.sayAll([L.r4, L.r5])],
       [1400, () => this.say(L.r6)],
     ];

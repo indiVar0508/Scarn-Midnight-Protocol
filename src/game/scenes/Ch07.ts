@@ -73,6 +73,20 @@ export class Ch07 extends ChapterScene {
     scarn.setExpression('idle');
     await this.say(L.m1);
     await this.say(L.n2);
+    // the nurse leans in. The heart monitor has opinions.
+    await walkRig(this, nurse, 820, 600, 120);
+    nurse.setFacing(-1);
+    nurse.strike('point');
+    bpm = 178;
+    sfx('heart_alarm');
+    this.flash(0xff4060, 120, 0.25);
+    await this.say(L.nk1);
+    scarn.setExpression('shock');
+    await this.say(L.nk2);
+    scarn.setExpression('idle');
+    await walkRig(this, nurse, 1040, 600, 160);
+    nurse.setFacing(-1);
+    bpm = 62;
     await this.say(L.m2);
     this.letterbox(false);
     // injury report card

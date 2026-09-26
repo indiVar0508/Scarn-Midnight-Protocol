@@ -9,7 +9,7 @@ import { settings } from '../../state/settings';
 import { ui } from '../../state/ui';
 
 const FONT = '"Bebas Neue", Impact, sans-serif';
-const FRUSTRATIONS = ['GOLDENFACE', 'THE PRESIDENT', 'MY MUG', 'HOSTAGE #3', 'TOBY', "JAN'S CANDLES", 'GEORGE FOREMAN GRILL', 'BEING LEGALLY CHAD', 'MARLEY & ME', 'THE PAPERLESS OFFICE', 'CATHERINE'];
+const FRUSTRATIONS = ['GOLDENFACE', 'THE PRESIDENT', 'MY MUG', 'TOBY', 'THE STAPLERS', 'SHMIM', "JAN'S CANDLES", 'GEORGE FOREMAN GRILL', 'BEING LEGALLY CHAD', 'MARLEY & ME', 'THE PAPERLESS OFFICE', 'CATHERINE'];
 
 /**
  * The super shot: absorb frustrations (mash), then time the release while

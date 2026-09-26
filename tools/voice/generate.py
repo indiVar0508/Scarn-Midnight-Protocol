@@ -37,6 +37,7 @@ FX = {
     'phone': 'highpass=f=350,lowpass=f=3000,acompressor=threshold=-24dB:ratio=6,volume=1.7',
     'dream': 'aecho=0.8:0.75:70|140:0.3|0.2,lowpass=f=7000,acompressor=threshold=-18dB:ratio=3',
     'narrator': 'bass=g=3,acompressor=threshold=-20dB:ratio=3,aecho=0.8:0.4:25:0.08',
+    'room': 'aecho=0.8:0.35:18|34:0.12|0.07,acompressor=threshold=-18dB:ratio=3',
 }
 
 # Lines that need special processing beyond a voice effect.
@@ -48,8 +49,44 @@ SPECIAL = {
 
 
 def h(line):
-    s = f"{line['text']}|{line['voice']}|{line['speed']}|{line['fx']}|{SPECIAL.get(line['id'], '')}|v3"
+    s = f"{line['text']}|{line['voice']}|{line['speed']}|{line['fx']}|{line.get('pitch', 0)}|{line.get('eq', '')}|{SPECIAL.get(line['id'], '')}|v4"
     return hashlib.sha1(s.encode()).hexdigest()[:12]
+
+
+def style_for(k, spec, cache={}):
+    """A voice id, or a blend "am_michael:0.65+am_puck:0.35" of Kokoro style vectors."""
+    if spec in cache:
+        return cache[spec]
+    if '+' not in spec and ':' not in spec:
+        cache[spec] = spec
+        return spec
+    total = None
+    wsum = 0.0
+    for part in spec.split('+'):
+        name, _, w = part.partition(':')
+        w = float(w or 1)
+        v = k.get_voice_style(name) * w
+        total = v if total is None else total + v
+        wsum += w
+    cache[spec] = (total / wsum).astype('float32')
+    return cache[spec]
+
+
+def pitch_filter(semitones):
+    """Shift pitch without changing duration (resample, then undo the tempo change)."""
+    if not semitones:
+        return ''
+    r = 2 ** (semitones / 12)
+    tempo = 1 / r
+    chain = [f'asetrate=24000*{r:.5f}', 'aresample=24000']
+    while tempo < 0.5:
+        chain.append('atempo=0.5')
+        tempo /= 0.5
+    while tempo > 2.0:
+        chain.append('atempo=2.0')
+        tempo /= 2.0
+    chain.append(f'atempo={tempo:.5f}')
+    return ','.join(chain)
 
 
 def main():
@@ -68,13 +105,17 @@ def main():
         from kokoro_onnx import Kokoro
         k = Kokoro(os.path.join(MODEL_DIR, 'kokoro-v1.0.onnx'), os.path.join(MODEL_DIR, 'voices-v1.0.bin'))
     for i, l in enumerate(todo):
-        samples, sr = k.create(l['text'], voice=l['voice'], speed=float(l['speed']), lang='en-us')
+        samples, sr = k.create(l['text'], voice=style_for(k, l['voice']), speed=float(l['speed']), lang='en-us')
         with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
             sf.write(tmp.name, samples, sr)
             wav = tmp.name
         af = SPECIAL.get(l['id'], FX.get(l['fx'], FX['none']))
         if l['id'] in SPECIAL:
             af = af + ',' + FX['none']
+        # character voice shaping first (pitch + timbre), then the scene effect
+        shape = ','.join(x for x in (pitch_filter(float(l.get('pitch', 0))), l.get('eq', '')) if x)
+        if shape and l['id'] not in SPECIAL:
+            af = shape + ',' + af
         dst = os.path.join(OUT, l['id'] + '.mp3')
         subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', wav, '-af', af + ',loudnorm=I=-17:TP=-2:LRA=9', '-ac', '1', '-ar', '24000', '-b:a', '40k', dst], check=True)
         os.unlink(wav)

@@ -231,10 +231,16 @@ export class Ch01 extends ChapterScene {
         await this.crashZoom(this.scarn.x + 20, this.scarn.y - 110, 1.5);
         this.scarn.rig.strike('dramaticTurn');
         await this.say(L.scarn5);
+        // ...and the store PA steals his line.
         this.scarn.rig.setFacing(-1);
-        this.scarn.rig.strike('heroic');
-        await this.wait(400);
+        sfx('beep_bad');
         await this.say(L.scarn6);
+        await this.zoomTo(1, 200);
+        this.scarn.rig.setExpression('shock');
+        this.scarn.rig.gesture('point', 900);
+        await this.say(L.scarn7);
+        this.scarn.rig.setExpression('idle');
+        this.scarn.rig.strike('heroic');
         this.lensFlare(700, 180);
         await this.freezeFrame('SCARN.', 1400);
         paid = true;

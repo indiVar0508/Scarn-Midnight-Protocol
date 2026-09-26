@@ -16,7 +16,7 @@ import { R } from '../art/characters';
 import { CH06 as L } from '../../data/script/ch06';
 import { music } from '../../audio/music';
 import { sfx, ambience } from '../../audio/sfx';
-import { findBeet, save, setFlag } from '../../state/save';
+import { findBeet, save, setFlag, unlockAchievement } from '../../state/save';
 import { ui } from '../../state/ui';
 import { Director } from '../Director';
 import { input } from '../systems/Input';
@@ -320,6 +320,8 @@ export class Ch06 extends ChapterScene {
       hs.push(r);
     }
     this.speaker('hostage', hs[0]);
+    this.speaker('kevin', hs[1]);
+    this.speaker('pam', hs[2]);
     this.speaker('hostage3', hs[3]);
     this.scarn.setMode('explore');
     this.objective('Find the hostages');
@@ -333,6 +335,7 @@ export class Ch06 extends ChapterScene {
     await this.say(L.d3);
     this.scarn.rig.setFacing(1);
     await this.say(L.d4);
+    await this.say(L.kv1);
     await this.say(L.d5);
     await this.say(L.d6);
     await this.say(L.d7);
@@ -379,29 +382,46 @@ export class Ch06 extends ChapterScene {
       await this.say(L.e2);
       await this.say(L.e3);
       await this.say(L.e4);
-      gf.rig.strike('point');
+      gf.rig.strike('aim');
+      gf.rig.aimAngle = Math.atan2(h3.y - gf.y, h3.x - gf.x);
       await this.say(L.e5);
-      // the expensive shot: HR, launched via T-shirt cannon. Four times.
-      for (const [label, zoom] of [
-        ['', 1],
-        ['INSTANT REPLAY', 1.4],
-        ['REPLAY (ANGLE 2)', 1.9],
-        ["REPLAY (DIRECTOR'S CUT)", 1.2],
-      ] as [string, number][]) {
-        h3.setPosition(1300, 560).setAngle(0).setAlpha(1);
+      // The most expensive shot in the movie. Michael shows it from four angles.
+      const takes: [string, number, typeof L.dir1 | null][] = [
+        ['', 1, null],
+        ['INSTANT REPLAY', 1.4, L.dir1],
+        ['REPLAY (ANGLE 2)', 1.9, L.dir2],
+        ["REPLAY (DIRECTOR'S CUT)", 1.2, null],
+      ];
+      for (const [label, zoom, note] of takes) {
+        h3.setAnim('idle', 'tied').setExpression('idle');
+        h3.snap();
+        if (note) await this.say(note);
         if (label) this.detach(this.card({ kind: 'stamp', title: label }, 1000));
         this.cameras.main.setZoom(zoom);
-        this.cameras.main.centerOn(1300, 420);
-        sfx('cannon');
-        this.shake(150, 0.006);
-        await this.tweenP({ targets: h3, y: -300, angle: 540, duration: label.includes('DIRECTOR') ? 1600 : 700, ease: 'Quad.easeIn' });
-        await this.wait(300);
+        this.cameras.main.centerOn(label.includes('ANGLE 2') ? 1180 : 1300, 420);
+        const slow = label.includes('DIRECTOR');
+        sfx('shoot');
+        this.flash(0xffe08a, 80, 0.4);
+        h3.strike('hurt');
+        h3.setExpression('shock');
+        await this.wait(slow ? 700 : 250);
+        h3.setAnim('down');
+        sfx('knockdown');
+        this.shake(120, 0.004);
+        await this.wait(slow ? 1500 : 700);
       }
+      await this.say(L.dir3);
+      unlockAchievement('hostage3');
       this.cameras.main.setZoom(1);
       this.cameras.main.setScroll(60, 0);
+      gf.rig.aimAngle = null;
       this.scarn.rig.setExpression('shock');
       await this.say(L.e6);
       this.scarn.rig.setExpression('idle');
+      gf.rig.strike('victory');
+      await this.say(L.bs1);
+      await this.say(L.bs2);
+      await this.say(L.bs3);
       await this.say(L.e7);
       // THE PUCK. Triple crash zoom.
       for (const [line, target] of [
@@ -470,6 +490,27 @@ export class Ch06 extends ChapterScene {
     ui.set({ boss: null });
     this.scarn.setMode('locked');
     this.letterbox(true);
+    await this.say(L.fg1);
+    // a memory of Catherine, in soft focus
+    const unsoft = this.softFocus();
+    this.sepia(true);
+    await this.say(L.fg2);
+    this.sepia(false);
+    unsoft();
+    this.scarn.rig.strike('slapWind');
+    await this.say(L.fg3);
+    // the puck. Goldenface simply... leans.
+    ensureProp(this, 'puck');
+    const puck = this.add.image(this.scarn.x + 40, this.scarn.y - 70, 'puck').setScale(1.6 / R).setDepth(9000);
+    this.scarn.rig.strike('slapHit');
+    sfx('slapshot');
+    const gy = gf.y;
+    this.tweens.add({ targets: gf, y: gy + 70, duration: 180, yoyo: true, hold: 260, ease: 'Quad.easeOut' });
+    await this.tweenP({ targets: puck, x: gf.x + 700, y: gf.y - 110, angle: 720, duration: 650, ease: 'Linear' });
+    puck.destroy();
+    sfx('metal');
+    await this.wait(250);
+    await this.say(L.fg4);
     gf.rig.strike('aim');
     gf.rig.aimAngle = Math.atan2(this.scarn.y - gf.y, this.scarn.x - gf.x);
     await this.say(L.end1);

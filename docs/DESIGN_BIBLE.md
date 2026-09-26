@@ -42,7 +42,8 @@ release), Cinemablend "10 things from the full cut", Looper, Paste, Give Me My R
    says the hostages are **under the stadium**. A Goldenface assassin gets her with a blow dart
    (we show a sleep dart and a theatrical faint).
 7. Goldenface shoots a hostage (a stand-in for Toby) to show he means business; the moment is
-   replayed several times. (We turn it into a T-shirt-cannon "firing" replayed four times.)
+   replayed several times. (We keep the gag but not the gore: Goldenface's golden pistol, Toby
+   falls over, four replay angles, and Michael's megaphone insisting it is "integral to the story".)
 8. Scarn confronts Goldenface, **is shot**, recuperates, and learns **the President is in league
    with Goldenface**.
 9. At **Billy's** bar (Billy is played by Andy), someone plays G9 on the jukebox: **"The Scarn"**,
@@ -65,7 +66,7 @@ others → bar patrons and hostages.
 | # | Chapter | Beat summary |
 |---|---|---|
 | 1 | **Cleanup on Aisle Five** | Cold open. Scarn is shopping at a "supermarket" that is plainly a paper warehouse. Goldenface's goons attack. Tutorial fight → "Cleanup on aisle five." Freeze frame → THREAT / LEVEL / MIDNIGHT title → spinning newspapers → Catherine's soft-focus photo → "SCARN RETIRES, SELLS PAPER". |
-| 2 | **One Last Mission** | Scarn Manor (a small condo with a printed "MANOR" sign). Samuel wakes Scarn. President Jackson calls on a laptop "video phone". Dialogue with comic choices. Coin flip decides it (it's rigged; best two out of three…). Mission card: SAVE THE NHL ALL-STAR GAME. |
+| 2 | **One Last Mission** | Scarn Manor (a small condo with a printed "MANOR" sign). Samuel wakes a hungover Scarn; he's retired until he hears "Goldenface" ("This makes it personal"). Oval Office (the conference room): the President owns the stadium, "Threat Level... Midnight". Comic choices, a best-of-seven coin flip, "cleanup on aisle five". Mission card: SAVE THE NHL ALL-STAR GAME. |
 | 3 | **Cherokee Jack** | Find the hermit coach at a "frozen mountain lake" (warehouse floor + tarp + painted backdrop). Five 15–25 s training minigames in a montage. Scarn declares himself elite regardless of score. |
 | 4 | **The Tryout** | Speed-skating race vs two amateurs. Goldenface crashes it; skate-and-shoot encounter; Scarn is disqualified. Locker-room stealth: disguise, sneak, swap the photo on the All-Star pass. |
 | 5 | **The Funky Cat** | Samuel's fax machine prints "JASMINE WINDSONG". Jazz club exploration and clue collection. Jasmine's performance. Tape-deck puzzle: record, reverse, fix the tape speed, read the waveform → UNDER THE STADIUM. Sleep dart; Jasmine faints; kitchen escape. |
@@ -113,7 +114,30 @@ one signature colour**.
 | **Billy** | Warm and uncomplicated | Bartender | Vest, bow tie, rolled sleeves, towel over shoulder, sweater around shoulders | Jukebox, glow-stick neon | Bouncy, a cappella energy | Dance leader |
 | **Catherine Zeta-Scarn** | Idealized memory | Late wife | Original design: auburn updo, pearl necklace, lavender gown | Heavy soft focus, sparkles | Slow-motion only | Memories and boss taunts |
 | **Goons** | Committed extras | Henchmen | Black suits, gold ties, black ski masks with sunglasses, lanyards | Fall down slightly late | Wind-up telegraphs | Enemies |
-| **Hostage #3** | Sad, polite | HR rep in a paper hat | Beige cardigan, paper concession hat | Nobody rescues him first | Sighs | Running gag |
+| **Toby (hostage)** | Sad, polite | HR rep in a paper hat | Beige cardigan, paper concession hat | Michael would like him rescued last | Sighs | The most expensive shot in the movie |
+
+---
+
+### Who is playing whom (and how they talk)
+
+The film's joke is that everyone is still themselves under the costume. Every line in the game
+is written through two filters: the movie character, and the coworker Michael cast.
+
+| Role | Played by | How the lines are written | Voice casting (synthetic, tuned) |
+|---|---|---|---|
+| Michael Scarn | Michael Scott | Mangled idioms, big words used slightly wrong, puns explained after landing, needs the room to love him, "that's what she said" at the worst moment | Mid-high and fast: blend of two Kokoro male voices, +3 semitones, presence boost (median F0 about 136 Hz) |
+| Samuel L. Chang | Dwight Schrute | "Question:", "False.", beets, bears, Renaissance fairs, keeps almost admitting he is a robot | Clipped, nasal EQ, slightly lower than Michael (about 127 Hz) |
+| Goldenface | Jim Halpert | Deadpan, reads villain lines like a cue card, asks if that was enough "ha"s, breaks to blame Michael's script | Relaxed and dry, small room instead of villain reverb (about 119 Hz) |
+| President Jackson | Darryl Philbin | Chill, calls everyone "man", evil but unbothered, owns the stadium | Deep and smooth (about 92 Hz) |
+| Cherokee Jack | Creed Bratton | Non sequiturs about the IRS, warrants, past lives and a van | Old and gravelly, low-passed (about 123 Hz) |
+| Jasmine Windsong | Jan Levinson | Icy, vain, candles, falls for pathetic men | Cool, low female (about 183 Hz) |
+| Billy | Andy Bernard | Cornell, a cappella, "Nard Dog", relentlessly upbeat | Bright and bouncy (about 143 Hz) |
+| Narrator | Stanley Hudson | Reads the script flatly and occasionally comments on it | Very deep and slow (about 94 Hz) |
+| Hostages | Pam, Kevin, Toby | Pam is kind, Kevin is about the chili, Toby is Toby | Soft (Pam, about 200 Hz), very low and slow (Kevin, about 84 Hz), muffled (Toby) |
+| Nurse | Helene (Pam's mom) | The movie's "make sure everything is working properly" gag | Mature female (about 194 Hz) |
+
+Voices: blends of Kokoro-82M's stock voices, pitch-shifted and EQ'd toward each actor's register
+and energy. No recording of any actor is used, sampled or cloned.
 
 ---
 
@@ -150,7 +174,7 @@ Why the source is funny, and how each thing becomes gameplay:
 | Cheap effects | Explosions are clip-art with a visible white border; fire is flat orange paper; snow is visibly the same 12 flakes |
 | Characters waiting for cues | Goons fall 0.4 s after being hit; hostages cheer late; one extra looks at the camera |
 | Dramatic freeze frames and slow motion | Freeze frame with a title stamp at every chapter end; slow-mo "Nooo" on key beats |
-| Replaying the "expensive shot" | Hostage #3 T-shirt-cannon gag plays four times from new angles |
+| Replaying the "expensive shot" | Toby's (non-graphic) shooting plays four times from new angles while Michael yells through a megaphone |
 | Overconfident one-liners | Scarn quips after fights; a **Dramatic Pose** button (F) exists purely for flair and is tracked as a stat |
 | Continuity errors across years of filming | Samuel's glasses change between shots; a calendar changes years |
 | The screening (episode) | Screening Mode: silhouettes, a camera glance, polite applause |
@@ -173,7 +197,7 @@ film, with no caricature. Violence is cartoon-style (goons fall over, nobody ble
 | "Cleanup on aisle five" | Interact with the cashier to deliver the line |
 | Newspaper backstory | Spinning-paper montage the player advances |
 | President's call | Branching comic responses that always converge |
-| Coin flip | Timing microgame: charge the flip, catch it; rigged "best two out of three" |
+| Coin flip | Timing microgame: charge the flip, catch it; best of seven, as in the film |
 | Cherokee Jack training | Five montage minigames: mop the ice, stick-handling rhythm, target shooting, obstacle skating, reaction quick-draw |
 | Tryout | Stride-timing speed-skating race, then a skate-and-shoot fight with Goldenface's goons |
 | Losing the tryout | Locker-room stealth: hide in lockers, wear a disguise, swap the pass photo |

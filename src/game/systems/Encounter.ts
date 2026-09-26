@@ -3,6 +3,7 @@ import type { Combat } from './Combat';
 import type { Scarn } from '../entities/Scarn';
 import { Goon } from '../entities/Goon';
 import { Director } from '../Director';
+import { DIRECTOR_NOTES } from '../../data/script/misc';
 import { save, setFlag } from '../../state/save';
 import { qa } from './qa';
 import { music } from '../../audio/music';
@@ -37,6 +38,8 @@ export function wireRetake(scene: ChapterScene, scarn: Scarn): void {
       const take = ((save.get().flags[key] as number | undefined) ?? 1) + 1;
       setFlag(key, take);
       music.stinger('fail');
+      const notes = Object.values(DIRECTOR_NOTES);
+      scene.bark(notes[(take - 2) % notes.length]);
       await Director.overlay?.clapper(take);
       if (scene.signal.aborted) return; // quit to menu during the clapper
       Director.restartCheckpoint();

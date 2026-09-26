@@ -8,8 +8,9 @@ import { CH02 as L } from '../../data/script/ch02';
 import { music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { findBeet, addStat, unlockAchievement } from '../../state/save';
-import { openCall } from '../systems/VideoCall';
+import { dressOvalOffice } from './sets';
 import { coinFlip } from '../minigames/CoinFlip';
+import { Director } from '../Director';
 import { ensureProp } from '../art/props';
 import { R } from '../art/characters';
 
@@ -107,7 +108,7 @@ export class Ch02 extends ChapterScene {
     this.samuel.following = false;
     this.samuel.rig.setFacing(-1);
     this.cameras.main.startFollow(this.scarn.rig, true, 0.09, 0.09, 0, 60);
-    this.objective('Answer the President (the laptop on the side table)');
+    this.objective('The President wants to see you. Head out the front door. (Look around first, if you like.)');
     const once = (x: number, y: number, label: string, fn: () => Promise<void>) => this.interact({ x, y, r: 110, label, once: true, onUse: fn });
     once(620, 440, 'Admire portrait', () => this.say(L.portrait));
     once(880, 440, 'Inspect trophies', () => this.say(L.trophies));
@@ -133,45 +134,51 @@ export class Ch02 extends ChapterScene {
       await this.say(L.beet);
     });
     this.interact({ x: this.samuel.x, y: this.samuel.y, r: 90, label: 'Talk to Samuel', onUse: () => this.say(L.samuelTalk) });
-    let answered = false;
+    let leaving = false;
     this.interact({
-      x: 1160,
-      y: 540,
+      x: 1500,
+      y: 470,
       r: 120,
-      label: 'Answer the laptop',
+      label: 'Go see the President',
       once: true,
       onUse: async () => {
-        answered = true;
+        await this.say(L.leave);
+        leaving = true;
       },
     });
-    // the laptop rings until answered
-    const ring = this.time.addEvent({ delay: 2600, loop: true, callback: () => sfx('phone_ring', 0.5) });
-    await this.waitUntil(() => answered);
-    ring.remove();
+    await this.waitUntil(() => leaving);
+    sfx('door');
+    await Director.overlay?.fade(true, 400);
+    this.guard(); // the chapter may have been stopped while the overlay played
   }
 
   private async call(): Promise<void> {
-    this.buildManor();
+    // The Oval Office. (The conference room, with a flag in it.)
+    this.useSet('oval', () => dressOvalOffice(this, W));
     music.play('suspense', { fade: 1 });
-    if (!this.scarn || !this.scarn.rig.active) {
-      this.scarn = new Scarn(this, this.rig('scarn', 1080, 560), 1080, 560);
-      this.samuel = new Samuel(this, 900, 610);
-      this.samuel.following = false;
-    }
+    const president = this.rig('president', 900, 470, -1);
+    this.speaker('president', president);
+    this.scarn = new Scarn(this, this.rig('scarn', 120, 580), 120, 580);
+    this.samuel = new Samuel(this, 40, 610);
+    this.samuel.leader = this.scarn;
     this.scarn.setMode('locked');
-    await walkActor(this, this.scarn, 1090, 560, 220);
+    this.cameras.main.startFollow(this.scarn.rig, true, 0.09, 0.09, 0, 60);
+    await Director.overlay?.fade(false, 500);
+    this.guard(); // the chapter may have been stopped while the overlay played
+    await walkActor(this, this.scarn, 690, 560, 220);
     this.scarn.rig.setFacing(1);
+    this.samuel.following = false;
+    await walkActor(this, this.samuel, 560, 600, 220);
+    this.samuel.rig.setFacing(1);
     this.cameras.main.stopFollow();
-    await this.panTo(900, 360, 500);
+    await this.panTo(820, 360, 500);
     this.letterbox(true);
-    const call = openCall(this, 'president', { x: 690, y: 90, w: 540, h: 300 });
-    this.speaker('president', call.rig);
-    this.speaker('president_tv', call.rig);
+    await this.say(L.p0);
     await this.say(L.p1);
     const c1 = await this.choose(null, [
       { label: '"I\'m retired. I sell paper now."', line: L.c1a },
       { label: '"Is this about the missing staplers?"', line: L.c1b },
-      { label: '[Turn around in chair. Dramatically.]', line: L.c1c },
+      { label: '[Sit in the chair backwards. Like a cool teacher.]', line: L.c1c },
     ]);
     if (c1 === 0) await this.say(L.p1a);
     if (c1 === 1) await this.say(L.p1b);
@@ -187,17 +194,22 @@ export class Ch02 extends ChapterScene {
     await this.say(L.p3);
     this.scarn.rig.setExpression('idle');
     const c2 = await this.choose(null, [
-      { label: '"Goldenface. The man who took my wife."', line: L.c2a },
-      { label: '"Not the hot dog guys!"', line: L.c2b },
+      { label: '"Goldenface. The man who murdered my wife."', line: L.c2a },
+      { label: '"Not the nacho lady!"', line: L.c2b },
       { label: '"Why would anyone attack hockey?"', line: L.c2c },
     ]);
     await this.say([L.p2a, L.p2b, L.p2c][c2]);
+    if (c2 === 1) await this.say(L.m2b);
     await this.say(L.p4);
+    await this.say(L.m8);
+    await this.crashZoom(president.x, president.y - 110, 1.5);
+    await this.say(L.p6);
+    music.stinger('dun');
+    await this.zoomTo(1, 300);
     await this.say(L.m5);
     await this.say(L.m6);
 
-    // coin flip: best two out of three, or three out of five, or...
-    call.hide(true);
+    // The coin flip. Best of seven, as God and the movie intended.
     let heads = 0;
     let attempt = 0;
     while (heads < 1) {
@@ -219,20 +231,18 @@ export class Ch02 extends ChapterScene {
       }
       attempt++;
     }
-    call.hide(false);
     this.scarn.rig.gesture('heroic', 1200);
     await this.say(L.m7);
     await this.say(L.p5);
-    await this.say(L.m8);
     await this.crashZoom(this.scarn.x, this.scarn.y - 100, 1.5);
-    await this.say(L.p6);
-    music.stinger('dun');
-    await this.zoomTo(1, 300);
-    call.close();
     this.scarn.rig.strike('fingerguns');
     this.lensFlare(900, 160);
     await this.say(L.m9);
-    await this.missionCard('SAVE THE NHL ALL-STAR GAME', 'Hostages: concession stand workers (incl. the nacho lady). Threat level: MIDNIGHT.');
+    await this.zoomTo(1, 300);
+    this.scarn.rig.setAnim('idle');
+    await this.say(L.s6);
+    await this.say(L.m10);
+    await this.missionCard('SAVE THE NHL ALL-STAR GAME', 'Hostages: the concession stand workers (incl. the nacho lady). Threat level: MIDNIGHT.');
     this.letterbox(false);
   }
 }

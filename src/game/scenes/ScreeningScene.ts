@@ -33,15 +33,15 @@ const AUDIENCE: { hair: Hair; x: number; row: number; w: number; h: number }[] =
 
 // After each chapter: [caption, reaction]
 const REACTIONS: Record<number, [string, 'laugh' | 'silence' | 'clap' | 'gasp' | 'cough' | 'sparse']> = {
-  1: ['[restrained laughter]', 'laugh'],
-  2: ['[someone coughs]', 'cough'],
-  3: ['[one person applauds. It is the director.]', 'sparse'],
-  4: ['[awkward silence]', 'silence'],
+  1: ['[Stanley, flatly: "I did not agree to narrate this."]', 'laugh'],
+  2: ['[Darryl, quietly: "Wait. I own the stadium?"]', 'cough'],
+  3: ['[Creed: "I don\'t remember filming this. Or that cabin."]', 'sparse'],
+  4: ['[Jim looks directly into the camera]', 'silence'],
   5: ['[whispering: "is that Jan?"]', 'laugh'],
-  6: ['[debate breaks out about whether Samuel is a robot]', 'gasp'],
-  7: ['[a laugh, quickly stifled]', 'laugh'],
-  8: ['[gasps. One of them sarcastic.]', 'gasp'],
-  9: ['[the entire room claps along]', 'clap'],
+  6: ['[Toby, very quietly: "Four times?"]', 'gasp'],
+  7: ['[Pam, to her mother: "Mom."]', 'laugh'],
+  8: ['[Dwight: "Samuel is clearly a robot. Clearly."]', 'gasp'],
+  9: ['[the entire room claps along. Andy does the harmonies.]', 'clap'],
   10: ['[standing ovation (one person, same person)]', 'clap'],
 };
 

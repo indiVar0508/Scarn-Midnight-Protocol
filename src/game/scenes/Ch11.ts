@@ -74,6 +74,17 @@ export class Ch11 extends ChapterScene {
         this.prop('trophy', 915, 300, 0.45).setDepth(405);
         sfx('sparkle');
         await this.say(L.m2);
+        // breakfast, basking in the glow of the trophy
+        this.scarn.setMode('locked');
+        this.scarn.rig.hold('fryingpan', 6, 0, 0);
+        this.scarn.rig.strike('heroic');
+        sfx('clink');
+        await this.say(L.brk1);
+        await this.say(L.brk2);
+        this.scarn.rig.setFacing(1);
+        await this.say(L.brk3);
+        this.scarn.rig.hold(null);
+        this.scarn.setMode('explore');
         placed = true;
       },
     });

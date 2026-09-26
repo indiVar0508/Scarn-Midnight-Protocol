@@ -17,7 +17,7 @@ interface Line {
 
 const here = dirname(fileURLToPath(import.meta.url));
 const dir = join(here, '../../src/data/script');
-const out: { id: string; text: string; voice: string; speed: number; fx: string }[] = [];
+const out: { id: string; text: string; voice: string; speed: number; fx: string; pitch: number; eq: string }[] = [];
 
 for (const f of readdirSync(dir).sort()) {
   if (!/^(ch\d\d|misc)\.ts$/.test(f)) continue;
@@ -28,7 +28,8 @@ for (const f of readdirSync(dir).sort()) {
       if (!line || typeof line !== 'object' || !('id' in line) || line.silent) continue;
       const c = CAST[line.who];
       if (!c) throw new Error(`Unknown speaker ${String(line.who)} in ${line.id}`);
-      out.push({ id: line.id, text: line.speak ?? line.text, voice: c.voice, speed: c.speed, fx: c.fx });
+      const m = c as { pitch?: number; eq?: string };
+      out.push({ id: line.id, text: line.speak ?? line.text, voice: c.voice, speed: c.speed, fx: c.fx, pitch: m.pitch ?? 0, eq: m.eq ?? '' });
     }
   }
 }

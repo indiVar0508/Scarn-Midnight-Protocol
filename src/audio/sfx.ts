@@ -333,6 +333,10 @@ const SFX: Record<string, (pan: number) => void> = {
     tone({ type: 'triangle', f: 1976, dur: 0.16, vol: 0.06, delay: 0.04, pan: p });
   },
   charge: (p) => tone({ type: 'sawtooth', f: 110, to: 880, dur: 1.2, vol: 0.1, pan: p, filter: 2400, curve: 'lin' }),
+  glass: (p) => {
+    noise({ dur: 0.35, type: 'highpass', f: 4000, vol: 0.35, pan: p, reverb: 0.2 });
+    for (let i = 0; i < 6; i++) tone({ type: 'sine', f: 2200 + Math.random() * 3200, dur: 0.12 + Math.random() * 0.2, vol: 0.05, delay: 0.03 + i * 0.05, pan: p });
+  },
 };
 
 export type SfxName = keyof typeof SFX;

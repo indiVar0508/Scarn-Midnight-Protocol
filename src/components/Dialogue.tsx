@@ -121,7 +121,12 @@ export function Dialogue() {
     >
       {d.portrait && d.style !== 'narrator' && <img className="portrait" src={d.portrait} alt="" />}
       <div style={{ flex: 1, minWidth: 0 }}>
-        {d.style !== 'narrator' && <div className="who">{d.name}</div>}
+        {d.style !== 'narrator' && (
+          <div className="who">
+            {d.name}
+            {d.actor && <span className="actor">played by {d.actor}</span>}
+          </div>
+        )}
         <div className="text">
           {d.text.slice(0, shown)}
           <span style={{ opacity: 0 }}>{d.text.slice(shown)}</span>

@@ -8,6 +8,8 @@ export interface DialogueView {
   id: number;
   speaker: string;
   name: string;
+  /** Office employee playing the role, e.g. "Dwight Schrute". */
+  actor?: string | null;
   color: string;
   portrait: string | null;
   text: string;

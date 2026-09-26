@@ -12,3 +12,4 @@ tools/voice/.cache
 .DS_Store
 *.log
 tools/voice/lines.json
+__pycache__

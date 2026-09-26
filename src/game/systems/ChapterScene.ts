@@ -3,7 +3,7 @@ import { Director, isCancel } from '../Director';
 import { ui, showDialogue, showCard, caption, setObjective, setHint, Cancelled, type DialogueStyle } from '../../state/ui';
 import { settings, shakeScale } from '../../state/settings';
 import { setCheckpoint, addStat, save, unlockAchievement } from '../../state/save';
-import { CAST, type SpeakerId } from '../../data/cast';
+import { CAST, type CastMember, type SpeakerId } from '../../data/cast';
 import type { Line, Choice } from '../../data/script/lines';
 import { chapterById } from '../../data/chapters';
 import { voice } from '../../audio/voice';
@@ -276,7 +276,7 @@ export abstract class ChapterScene extends Phaser.Scene {
     });
     try {
       await showDialogue(
-        { speaker: line.who, name: c.name, color: c.color, portrait: portraitFor(c.portrait, c.color), text: line.text, style, choices: null, autoMs },
+        { speaker: line.who, name: c.name, actor: (c as CastMember).actor ?? null, color: c.color, portrait: portraitFor(c.portrait, c.color), text: line.text, style, choices: null, autoMs },
         this.signal,
       );
     } finally {
@@ -318,6 +318,7 @@ export abstract class ChapterScene extends Phaser.Scene {
         {
           speaker: who,
           name: prompt ? c.name : 'MICHAEL SCARN',
+          actor: prompt ? ((c as CastMember).actor ?? null) : CAST.scarn.actor,
           color: prompt ? c.color : CAST.scarn.color,
           portrait: portraitFor(prompt ? c.portrait : 'scarn', prompt ? c.color : CAST.scarn.color),
           text: prompt?.text ?? '(What does Scarn say?)',
