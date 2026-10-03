@@ -13,3 +13,4 @@ tools/voice/.cache
 *.log
 tools/voice/lines.json
 __pycache__
+public/voice-audition

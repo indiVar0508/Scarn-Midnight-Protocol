@@ -1,0 +1,293 @@
+import type { ComponentType } from 'react'
+import type { WorldFonts } from './font.ts'
+import type { WorldControls } from './keyboard.ts'
+import type { WorldPalette } from './palette.ts'
+import { sub } from './rng.ts'
+import type { AvatarView, Vec3, WorldFog } from './types.ts'
+
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue }
+
+/** One contributor to a world. */
+export interface WorldAuthor {
+  name: string
+  url?: string
+}
+
+/** Where a world lives, so it can be linked, forked, and contributed back to. */
+export interface WorldSource {
+  /** Full web URL of the canonical repo, e.g. `https://github.com/owner/repo`.
+   *  Stored whole (not `owner/repo`) so the host is detectable for the fork flow. */
+  url: string
+  /** Path to the world file within the repo, e.g. `public/helicon.world.json`. */
+  path?: string
+  branch?: string
+}
+
+/** A world's descriptive identity: attribution, license, and where it lives.
+ *  Everything is optional; a world with no `meta` still renders. Travels in the
+ *  world file (not tooling config) so it survives a fork. */
+export interface WorldMeta {
+  title?: string
+  description?: string
+  /** Worlds accrue contributors, hence an array. */
+  authors?: WorldAuthor[]
+  /** Free SPDX-ish string. Components are MIT code; a world is content, so authors
+   *  often prefer a Creative Commons license for the world itself. */
+  license?: string
+  source?: WorldSource
+}
+
+/** One placed component: a registry key, its props, and optional nested children. */
+export interface WorldNode {
+  /** Registry key — the component's name, e.g. "Bookshelf". */
+  type: string
+  /** Stable identity, durable across edits and reorders. Optional in hand-authored
+   *  worlds; the editor fills it in (see `assignNodeIds`). Drives React keys,
+   *  selection, and minimal PR diffs. */
+  id?: string
+  /** Measure `position[1]` from the ground instead of absolutely: `ground` is an offset above
+   *  the terrain at the node's (x, z), `surface` above whatever is highest there (terrain, a
+   *  dock, a floor). Resolved by the renderer; the file keeps the authored offset. */
+  anchor?: 'ground' | 'surface'
+  props?: Record<string, JsonValue>
+  children?: WorldNode[]
+}
+
+/** A whole world as plain data — diffable, forkable, version-controlled like any file. */
+export interface WorldData {
+  version: 1
+  /** The world's identity (title, authors, license, source). Optional. */
+  meta?: WorldMeta
+  unit?: number
+  gravity?: Vec3
+  /** Baseline ground level (Y, in units). Floor-sitting and water components default
+   *  their placement to it; an explicit `position` wins. Default 0. */
+  ground?: number
+  /** Pinned time-of-day ("HH:MM", 24h) for a reproducible world. Drives day/night. */
+  time?: string
+  /** IANA timezone for a live, clock-driven day/night (used when `time` is unset). */
+  timezone?: string
+  /** World default camera view; `Player` reads it when its own `view` is unset. */
+  avatar?: AvatarView
+  /** Input-binding overrides (action → `KeyboardEvent.code`s), merged over the
+   *  defaults. Unknown action names become custom bindings components can read. */
+  controls?: WorldControls
+  /** Color-slot overrides applied to every component in the world. */
+  palette?: Partial<WorldPalette>
+  /** Fonts the world ships, by role (`display`, `body`). Text components draw from
+   *  these; unset roles fall back to the bundled default. Values are font URLs. */
+  fonts?: Partial<WorldFonts>
+  fog?: WorldFog
+  nodes: WorldNode[]
+}
+
+/**
+ * A composite: a named arrangement of component nodes, held in a registry as data
+ * instead of code. A world places it as one reference node (`{ type: "House" }`);
+ * the renderer expands it eagerly into its arrangement.
+ */
+export interface CompositeDef {
+  kind: 'composite'
+  name?: string
+  description?: string
+  /** Reserved for the future streaming/LOD pass: impostor box `[w, h, d]` in units. */
+  bounds?: [number, number, number]
+  /** Stands on the ground: the world check flags an instance that is buried or floating. */
+  groundSitting?: boolean
+  nodes: WorldNode[]
+}
+
+// biome-ignore lint/suspicious/noExplicitAny: a registry holds components with heterogeneous prop types
+export type RegistryEntry = ComponentType<any> | CompositeDef
+
+export type ComponentRegistry = Record<string, RegistryEntry>
+
+/** True when a registry entry is a composite arrangement rather than a component. */
+export function isCompositeDef(entry: RegistryEntry | undefined): entry is CompositeDef {
+  return (
+    typeof entry === 'object' &&
+    entry !== null &&
+    (entry as CompositeDef).kind === 'composite' &&
+    Array.isArray((entry as CompositeDef).nodes)
+  )
+}
+
+/**
+ * Apply a composite instance's `seed` to its arrangement: children that don't pin
+ * their own seed get a stable derived one (`sub(seed, index)`), so one instance seed
+ * re-rolls the whole arrangement deterministically. Without a seed, nodes pass
+ * through unchanged.
+ */
+export function seedCompositeNodes(nodes: WorldNode[], seed?: number): WorldNode[] {
+  if (seed === undefined) return nodes
+  return nodes.map((node, index) =>
+    node.props?.seed !== undefined
+      ? node
+      : { ...node, props: { ...node.props, seed: sub(seed, index) } },
+  )
+}
+
+/**
+ * Expand a composite instance node into an editable `Group` subtree (the editor's
+ * "unpack"). The instance transform moves to the group; an instance seed is baked
+ * into the children so the unpacked result renders identically. The copy carries no
+ * ids — run the result through `assignNodeIds`.
+ */
+export function unpackComposite(node: WorldNode, def: CompositeDef): WorldNode {
+  const props = node.props ?? {}
+  const out: WorldNode = { type: 'Group', props: {} }
+  if (props.position !== undefined) out.props = { ...out.props, position: props.position }
+  if (props.rotation !== undefined) out.props = { ...out.props, rotation: props.rotation }
+  const seeded = seedCompositeNodes(def.nodes, props.seed as number | undefined)
+  out.children = JSON.parse(JSON.stringify(seeded)) as WorldNode[]
+  return out
+}
+
+/** Recreate a node with its keys in canonical order, recursing into children. */
+function normalizeNode(node: WorldNode): WorldNode {
+  const out: WorldNode = { type: node.type }
+  if (node.id !== undefined) out.id = node.id
+  if (node.anchor !== undefined) out.anchor = node.anchor
+  if (node.props !== undefined) out.props = node.props
+  if (node.children !== undefined) out.children = node.children.map(normalizeNode)
+  return out
+}
+
+/**
+ * Serialize a world to pretty JSON text with a canonical, stable key order
+ * (`version, meta, unit, gravity, ground, time, timezone, avatar, controls,
+ * palette, fonts, fog, nodes`; each node `type, id, anchor, props, children`). Stable
+ * output means an unchanged node never churns the diff, so PR reviews show only
+ * the real change.
+ */
+export function serializeWorld(data: WorldData): string {
+  // Build with a fixed key insertion order (nodes last); a plain record lets us add
+  // the optional fields conditionally without TypeScript demanding `nodes` up front.
+  const out: Record<string, unknown> = { version: data.version }
+  if (data.meta !== undefined) out.meta = data.meta
+  if (data.unit !== undefined) out.unit = data.unit
+  if (data.gravity !== undefined) out.gravity = data.gravity
+  if (data.ground !== undefined) out.ground = data.ground
+  if (data.time !== undefined) out.time = data.time
+  if (data.timezone !== undefined) out.timezone = data.timezone
+  if (data.avatar !== undefined) out.avatar = data.avatar
+  if (data.controls !== undefined) out.controls = data.controls
+  if (data.palette !== undefined) out.palette = data.palette
+  if (data.fonts !== undefined) out.fonts = data.fonts
+  if (data.fog !== undefined) out.fog = data.fog
+  out.nodes = data.nodes.map(normalizeNode)
+  return `${JSON.stringify(out, null, 2)}\n`
+}
+
+/** Parse and lightly validate world JSON text. Throws on an unsupported shape. */
+export function parseWorld(json: string): WorldData {
+  const data = JSON.parse(json) as WorldData
+  if (data.version !== 1) {
+    throw new Error(
+      `Unsupported world version: ${JSON.stringify((data as { version?: unknown }).version)}`,
+    )
+  }
+  if (!Array.isArray(data.nodes)) {
+    throw new Error('World data must have a "nodes" array')
+  }
+  if (data.meta !== undefined) {
+    const meta = data.meta as unknown
+    if (typeof meta !== 'object' || meta === null || Array.isArray(meta)) {
+      throw new Error('World "meta" must be an object')
+    }
+    if ((meta as WorldMeta).authors !== undefined && !Array.isArray((meta as WorldMeta).authors)) {
+      throw new Error('World "meta.authors" must be an array')
+    }
+  }
+  if (data.time !== undefined && typeof data.time !== 'string') {
+    throw new Error('World "time" must be an "HH:MM" string')
+  }
+  if (data.timezone !== undefined && typeof data.timezone !== 'string') {
+    throw new Error('World "timezone" must be a string')
+  }
+  if (data.avatar !== undefined && data.avatar !== 'first' && data.avatar !== 'third') {
+    throw new Error('World "avatar" must be "first" or "third"')
+  }
+  if (data.ground !== undefined && typeof data.ground !== 'number') {
+    throw new Error('World "ground" must be a number')
+  }
+  if (data.controls !== undefined) {
+    const controls = data.controls as unknown
+    if (typeof controls !== 'object' || controls === null || Array.isArray(controls)) {
+      throw new Error('World "controls" must be an object of action to key codes')
+    }
+    for (const keys of Object.values(controls as Record<string, unknown>)) {
+      if (!Array.isArray(keys) || keys.some((k) => typeof k !== 'string')) {
+        throw new Error('World "controls" values must be arrays of key-code strings')
+      }
+    }
+  }
+  if (data.fonts !== undefined) {
+    const fonts = data.fonts as unknown
+    if (typeof fonts !== 'object' || fonts === null || Array.isArray(fonts)) {
+      throw new Error('World "fonts" must be an object of role to font URL')
+    }
+    for (const value of Object.values(fonts as Record<string, unknown>)) {
+      if (typeof value !== 'string') {
+        throw new Error('World "fonts" values must be font URL strings')
+      }
+    }
+  }
+  validateAnchors(data.nodes)
+  return data
+}
+
+function validateAnchors(nodes: WorldNode[]): void {
+  for (const node of nodes) {
+    if (node.anchor !== undefined && node.anchor !== 'ground' && node.anchor !== 'surface') {
+      throw new Error(
+        `Node "anchor" must be "ground" or "surface" (got ${JSON.stringify(node.anchor)})`,
+      )
+    }
+    if (node.children) validateAnchors(node.children)
+  }
+}
+
+/** Collect every existing node id in the tree into `into`. */
+function collectIds(nodes: WorldNode[], into: Set<string>): void {
+  for (const node of nodes) {
+    if (node.id) into.add(node.id)
+    if (node.children) collectIds(node.children, into)
+  }
+}
+
+/** A short id, unique within the `taken` set (which it also updates). */
+function makeNodeId(taken: Set<string>): string {
+  let id: string
+  do {
+    id = `n${Math.random().toString(36).slice(2, 8)}`
+  } while (taken.has(id))
+  taken.add(id)
+  return id
+}
+
+function withIds(nodes: WorldNode[], taken: Set<string>): WorldNode[] {
+  return nodes.map((node) => ({
+    ...node,
+    id: node.id ?? makeNodeId(taken),
+    ...(node.children ? { children: withIds(node.children, taken) } : {}),
+  }))
+}
+
+/**
+ * Return a copy of the world where every node has a stable `id`. Existing ids are
+ * preserved; missing ones are generated (unique within the world). The editor calls
+ * this on load, so edits and serialized output carry durable node identity even when
+ * the source world was hand-authored without ids.
+ */
+export function assignNodeIds(data: WorldData): WorldData {
+  const taken = new Set<string>()
+  collectIds(data.nodes, taken)
+  return { ...data, nodes: withIds(data.nodes, taken) }
+}

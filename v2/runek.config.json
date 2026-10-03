@@ -1,0 +1,5 @@
+{
+  "$schema": "https://runek.nullorder.org/registry/config-schema.json",
+  "registry": "https://runek.nullorder.org/r",
+  "dir": "src/runek"
+}

@@ -10,7 +10,7 @@ voices; nothing is cloned from or modelled on any actor. Per-character effects
 (villain reverb, radio band-pass, robot comb filter, ghost echo...) are applied
 with ffmpeg. Unchanged lines are skipped using a content hash.
 
-Requires: pip install kokoro-onnx soundfile ; ffmpeg ;
+Requires: pip install kokoro-onnx soundfile ; ffmpeg (or FFMPEG=/path/to/ffmpeg) ;
 model files kokoro-v1.0.onnx + voices-v1.0.bin (set KOKORO_DIR).
 """
 import hashlib
@@ -26,6 +26,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
 OUT = os.path.join(ROOT, 'public', 'voice')
 MODEL_DIR = os.environ.get('KOKORO_DIR', os.path.join(HERE, '.cache'))
+# A static ffmpeg works (e.g. the one bundled by `pip install imageio-ffmpeg`); ffprobe is not needed.
+FFMPEG = os.environ.get('FFMPEG', 'ffmpeg')
 
 FX = {
     'none': 'acompressor=threshold=-18dB:ratio=3:attack=5:release=80',
@@ -89,6 +91,17 @@ def pitch_filter(semitones):
     return ','.join(chain)
 
 
+def render(wav, af, dst):
+    """Shape a raw TTS wav with an ffmpeg filter chain, encode it to MP3, return seconds."""
+    shaped = wav[:-4] + '.fx.wav'
+    subprocess.run([FFMPEG, '-y', '-loglevel', 'error', '-i', wav, '-af', af + ',loudnorm=I=-17:TP=-2:LRA=9', '-ac', '1', '-ar', '24000', shaped], check=True)
+    dur = sf.info(shaped).duration
+    subprocess.run([FFMPEG, '-y', '-loglevel', 'error', '-i', shaped, '-b:a', '40k', dst], check=True)
+    os.unlink(wav)
+    os.unlink(shaped)
+    return dur
+
+
 def main():
     lines = json.load(open(os.path.join(HERE, 'lines.json')))
     os.makedirs(OUT, exist_ok=True)
@@ -117,9 +130,7 @@ def main():
         if shape and l['id'] not in SPECIAL:
             af = shape + ',' + af
         dst = os.path.join(OUT, l['id'] + '.mp3')
-        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', wav, '-af', af + ',loudnorm=I=-17:TP=-2:LRA=9', '-ac', '1', '-ar', '24000', '-b:a', '40k', dst], check=True)
-        os.unlink(wav)
-        dur = float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', dst], capture_output=True, text=True).stdout.strip() or 0)
+        dur = render(wav, af, dst)
         manifest[l['id']] = int(dur * 1000)
         hashes[l['id']] = h(l)
         if i % 10 == 0 or i == len(todo) - 1:

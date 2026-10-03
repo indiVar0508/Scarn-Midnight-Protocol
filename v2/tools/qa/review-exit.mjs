@@ -1,0 +1,51 @@
+// Review card flow (with real pointer lock): R → next take; Enter → PRINT IT → title slam →
+// newspaper montage → Esc skips → end card → Enter → title. Also Esc on review = PRINT IT.
+import { mkdirSync } from 'node:fs';
+import { chromium } from 'playwright';
+const BASE = process.env.BASE ?? 'http://localhost:5174/';
+const out = process.env.OUT ?? 'tools/qa/out';
+mkdirSync(out, { recursive: true });
+const browser = await chromium.launch({ executablePath: process.env.CHROME || undefined, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+page.on('pageerror', (e) => console.log('[pageerror]', e.message));
+page.on('console', (m) => m.type() === 'error' && console.log('[error]', m.text()));
+const has = async (t) => (await page.locator(`text=${t}`).count()) > 0;
+const status = () => page.evaluate(() => window.__TLM2__.take.get());
+async function playToReview() {
+  await page.waitForFunction(() => window.__TLM2__ && window.__TLM2__.sim.hittables.size > 0, null, { timeout: 30000 });
+  await page.waitForTimeout(800);
+  await page.mouse.click(640, 400);
+  const zap = () => page.evaluate(() => { const { sim } = window.__TLM2__; for (const h of sim.hittables.values()) h({ point: sim.player.pos.clone(), dir: sim.player.pos.clone().set(1, 0, 0), damage: 9 }); });
+  await zap(); await page.waitForTimeout(2600); await zap(); await page.waitForTimeout(3000);
+}
+await page.goto(BASE);
+await page.locator('.title .btn.primary').click();
+await playToReview();
+await page.waitForTimeout(800);
+console.log('1 review shown:', await has('PRINT IT'), '| status', (await status()).status);
+await page.keyboard.press('KeyR'); await page.waitForTimeout(1500);
+const t = await status();
+console.log('2 R → take', t.takeNo, t.status);
+await playToReview();
+await page.waitForTimeout(800);
+await page.keyboard.press('Enter'); await page.waitForTimeout(1500);
+console.log('3 Enter → slam shown:', await has('THREAT'));
+await page.screenshot({ path: `${out}/wrap-slam.png` });
+await page.waitForTimeout(3000);
+console.log('4 newspaper shown:', (await page.locator('img.paper').count()) > 0);
+await page.screenshot({ path: `${out}/wrap-paper.png` });
+await page.keyboard.press('Escape'); await page.waitForTimeout(800);
+console.log('5 Esc → end card:', await has('END OF SCENE 1'));
+await page.waitForTimeout(800);
+await page.screenshot({ path: `${out}/wrap-end.png` });
+await page.keyboard.press('Enter'); await page.waitForTimeout(2500);
+console.log('6 Enter → Scene 2 playing:', await has('Inspect everything in Scarn Manor'));
+await page.keyboard.press('Escape'); await page.waitForTimeout(400);
+await page.locator('text=QUIT TO TITLE').click(); await page.waitForTimeout(800);
+console.log('  quit → title:', (await page.locator('.scene-list').count()) > 0);
+await page.locator('.scene-row', { hasText: 'Aisle Five' }).click();
+await playToReview();
+await page.waitForTimeout(800);
+await page.keyboard.press('Escape'); await page.waitForTimeout(1200);
+console.log('7 Esc on review → wrap:', await has('THREAT'));
+await browser.close();
