@@ -1,8 +1,8 @@
 # TLM v2: start here
 
 The next version of the game: **3D, physics-driven, replayable**. Built with React Three Fiber,
-Rapier (WASM, via `@react-three/rapier`) and runek procedural components. It lives in `v2/` while v1
-keeps running from the repo root.
+Rapier (WASM, via `@react-three/rapier`) and runek procedural components. It is the app at the repo root;
+the original 2D game is archived in `legacy/`.
 
 | Doc | What's in it |
 |---|---|
@@ -13,7 +13,7 @@ keeps running from the repo root.
 Quick commands:
 
 ```bash
-cd v2 && npm install && npm run dev     # http://localhost:5174 (Scene 1: Aisle Five)
+npm ci && npm run dev     # http://localhost:5174 (Scene 1: Aisle Five)
 npm test                                # vitest
 npm run qa                              # Playwright smoke + take-loop scenarios (dev server running)
 npm run build && npm run preview        # production build on :4174

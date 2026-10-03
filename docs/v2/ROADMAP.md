@@ -57,6 +57,12 @@ Goal: testers voluntarily retry with a plan to improve. Everything else waits on
 ## Progress log
 (newest first; one entry per session: what was done, what's next, gotchas)
 
+- **2026-10-03 (session 2, restructure):** User wants only the new game deployed. Moved the 3D app from
+  `v2/` to the repo root and archived the 2D original in `legacy/` (TECH ADR-10). Shared modules copied
+  to `src/shared/` (`@shared` alias). Clean `npm ci` + build pass; QA scripts (`tools/qa/`) pass.
+  Vercel: the connector can't create projects (403), so the user imports the repo on vercel.com/new
+  (no special settings) and points production branch tracking at this branch (or merges to main).
+
 - **2026-10-03 (session 2, Scene 3):** Built Scene 3. New: `Training.tsx` (five trials sharing a step-based
   clock), `LakeProps.tsx`, `take.trial`/`slate`/`report` HUD, `sim.onPlayerHit` (training throws don't cost COOL),
   skate movement, CastFigure `pose`/`headband`. Found and fixed: scene scripts started twice under StrictMode
@@ -79,7 +85,7 @@ Goal: testers voluntarily retry with a plan to improve. Everything else waits on
   `play.mjs` is diorama-era (it still runs, but its aim assumptions are stale). Next: user's voice picks →
   regenerate; touch look; feel pass.
 
-- **2026-10-03 (later):** Session 1, continued. **Phase 1 slice playable** (`cd v2 && npm run dev`, port 5174).
+- **2026-10-03 (later):** Session 1, continued. **Phase 1 slice playable** (`npm run dev`, port 5174).
   Codex reviewed the specs; adopted: take loop in Phase 1, scope cut, KCC per physics step,
   buffered input, prop-impact knockdowns. Gotchas found and fixed (all now in TECH §9):
   StrictMode freed the KCC created in useMemo (now `useKcc` effect); runek `Floor`'s auto

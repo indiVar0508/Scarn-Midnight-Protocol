@@ -1,58 +1,123 @@
-import { useEffect, useRef } from 'react';
-import { useUI } from './components/hooks';
-import { BootScreen, MainMenu, ChapterSelect, Achievements } from './components/Menus';
-import { Settings } from './components/Settings';
-import { GameUI } from './components/GameUI';
-import { Credits, Stats } from './components/Ending';
-import { Director } from './game/Director';
-import { ui } from './state/ui';
-import { unlockAll } from './state/save';
-import { installDebug } from './debug';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { audio } from '@shared/audio/engine';
+import { music } from '@shared/audio/music';
+import { sfx } from '@shared/audio/sfx';
+import { sceneRecord } from './state/save';
+import { SCENES } from './game/scenes/registry.data';
+
+// three + r3f + rapier (WASM) load behind the title screen (TECH §5), prefetched once
+// the title has painted so pressing Play is near-instant.
+const loadGame = () => import('./game/Game');
+const Game = lazy(loadGame);
+const Lineup = lazy(() => import('./game/Lineup'));
+const lineup = new URLSearchParams(location.search).get('lineup');
+const VoiceAudition = lazy(() => import('./ui/VoiceAudition'));
+const voices = new URLSearchParams(location.search).has('voices');
 
 export default function App() {
-  const screen = useUI((s) => s.screen);
-  const inGame = useUI((s) => s.inGame);
-  const paused = useUI((s) => s.paused);
-  const touchLayout = useUI((s) => s.touchLayout);
-  const hostRef = useRef<HTMLDivElement>(null);
-
+  const [screen, setScreen] = useState<'title' | 'game'>('title');
+  const [sceneIndex, setSceneIndex] = useState(0);
   useEffect(() => {
-    if (!hostRef.current) return;
-    ui.set({ loading: 'LOADING PROJECTOR…' });
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('unlock') === 'all') unlockAll();
-    void Director.boot(hostRef.current).then(() => {
-      ui.set({ loading: null });
-      installDebug();
-    });
-    const fs = () => ui.set({ fullscreen: !!document.fullscreenElement });
-    document.addEventListener('fullscreenchange', fs);
-    return () => document.removeEventListener('fullscreenchange', fs);
+    const id = window.setTimeout(() => void loadGame(), 600);
+    return () => window.clearTimeout(id);
   }, []);
 
-  const showGameUI = inGame && (screen === 'game' || (screen === 'settings' && paused));
-  const hideCursor = screen === 'game' && !paused && touchLayout === 'action';
+  const play = (i: number) => {
+    audio.resume();
+    sfx('ui_select');
+    setSceneIndex(i);
+    setScreen('game');
+  };
 
+  if (voices) {
+    return (
+      <Suspense fallback={<Loading />}>
+        <VoiceAudition />
+      </Suspense>
+    );
+  }
+  if (lineup !== null) {
+    return (
+      <Suspense fallback={<Loading />}>
+        <Lineup only={lineup || undefined} />
+      </Suspense>
+    );
+  }
+  if (screen === 'game') {
+    return (
+      <Suspense fallback={<Loading />}>
+        <Game
+          key={sceneIndex}
+          sceneIndex={sceneIndex}
+          onQuit={() => {
+            music.play('spy', { fade: 0.8 });
+            setScreen('title');
+          }}
+          onNext={(i) => setSceneIndex(i)}
+        />
+      </Suspense>
+    );
+  }
+  return <Title onPlay={play} />;
+}
+
+const unlockAll = new URLSearchParams(location.search).get('unlock') === 'all';
+
+/** A scene is open once the one before it has been wrapped at least once. */
+function unlocked(i: number): boolean {
+  return unlockAll || i === 0 || sceneRecord(SCENES[i - 1].id).takes > 0;
+}
+
+function Title({ onPlay }: { onPlay: (i: number) => void }) {
+  // Continue = the furthest open scene.
+  let cont = 0;
+  SCENES.forEach((_, i) => unlocked(i) && (cont = i));
   return (
-    <div className="app">
-      <div className={`stage ${hideCursor ? 'hide-cursor' : ''}`}>
-        <div id="game" ref={hostRef} />
-        {showGameUI && screen === 'game' && <GameUI />}
-        <div className="layer">
-          {screen === 'boot' && <BootScreen />}
-          {screen === 'menu' && <MainMenu />}
-          {screen === 'chapters' && <ChapterSelect />}
-          {screen === 'settings' && <Settings />}
-          {screen === 'achievements' && <Achievements />}
-          {screen === 'credits' && <Credits />}
-          {screen === 'stats' && <Stats />}
-        </div>
+    <div className="title">
+      <div className="title-inner">
+        <p className="kicker">A Michael Scott Production</p>
+        <h1>
+          THREAT LEVEL <span>MIDNIGHT</span>
+        </h1>
+        <p className="sub">THE DIRECTOR'S CUT</p>
+        <button className="btn primary big" onClick={() => onPlay(cont)} autoFocus>
+          ▶ {cont === 0 && sceneRecord(SCENES[0].id).takes === 0 ? 'PLAY' : 'CONTINUE'}: SCENE {SCENES[cont].num}
+        </button>
+        <ol className="scene-list">
+          {SCENES.map((sc, i) => {
+            const rec = sceneRecord(sc.id);
+            const open = unlocked(i);
+            return (
+              <li key={sc.id}>
+                <button className="scene-row" disabled={!open} onClick={() => onPlay(i)}>
+                  <span className="num">{sc.num}</span>
+                  <span className="name">{open ? sc.title : '???'}</span>
+                  <span className="stars">
+                    {'★'.repeat(rec.notes.length)}
+                    {'☆'.repeat(sc.notes.length - rec.notes.length)}
+                  </span>
+                </button>
+                {!open && <span className="locked">Wrap scene {SCENES[i - 1].num} to unlock</span>}
+              </li>
+            );
+          })}
+        </ol>
+        <p className="controls">Click to capture the mouse · WASD move · mouse look · click shoot · E use · SPACE roll · F pose · R retake · Esc pause</p>
+        <p className="disclaimer">
+          Unofficial, non-commercial fan project. <i>The Office</i> and <i>Threat Level Midnight</i> belong to their rights holders. All art, music,
+          sound and dialogue here are original.
+        </p>
       </div>
-      <div className="rotate">
-        <div>
-          <div style={{ fontSize: '12vw' }}>⟳</div>
-          Rotate your device to landscape to watch THREAT LEVEL MIDNIGHT.
-        </div>
+    </div>
+  );
+}
+
+function Loading() {
+  return (
+    <div className="title">
+      <div className="title-inner">
+        <p className="kicker">Loading the set…</p>
+        <p className="sub">"Places, everyone. Places. Where is my hair gel?"</p>
       </div>
     </div>
   );

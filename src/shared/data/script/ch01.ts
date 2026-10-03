@@ -1,0 +1,36 @@
+import { lines } from './lines.ts';
+
+// Michael wrote every line of this movie. Scarn talks like Michael: big words used slightly
+// wrong, puns he is very proud of, and a desperate need for the room to love him.
+export const CH01 = lines('ch01', {
+  open: ['narrator', 'Scranton, Pennsylvania. An ordinary Tuesday. ...It says here it was Pretzel Day. I would remember that.'],
+  open2: ['scarn', 'Hair gel. Aisle five. In and out. Like a ninja. A ninja with incredible hair.'],
+  paper: ['scarn', 'Dunder Mifflin. The people person\'s paper people. I came up with that. They went a different direction.'],
+  forklift: ['scarn', 'A forklift. It is so big. And so hard to handle. That\'s what—', { speak: 'A forklift. It is so big. And so hard to handle. That is what' }],
+  forklift2: ['scarn', 'No. Not on a mission. Michael Scarn is a professional. ...She said it though.'],
+  sign: ['scarn', 'Zero days since the last forklift incident. Somebody is getting a very strongly worded Post-it.'],
+  cart: ['scarn', 'A shopping cart with one squeaky wheel. That\'s me. Always squeaking. Never getting the grease. Wow. That got sad.'],
+  beet: ['scarn', 'A beet. Samuel will want this. He says beets are nature\'s candy. Nature is wrong.'],
+  aisle: ['scarn', 'Aisle five. We meet again. For the first time.'],
+  gel: ['scarn', 'Extra strong hold. Like my handshake. And my grip on reality. Both very strong.'],
+  goon1: ['goon', 'Michael Scarn! Goldenface sends his regards!'],
+  scarn1: ['scarn', 'Tell Goldenface his regards are... disregarded. Boom.'],
+  goon2: ['goon2', 'Um, we\'re supposed to bring you in alive? Or not alive? The email was really unclear.'],
+  scarn2: ['scarn', 'Then hit reply all. And tell everybody Scarn said no.'],
+  bark1: ['scarn', 'You picked the wrong aisle, pal. Aisle five. The aisle... of pain.'],
+  bark2: ['scarn', 'I\'m not superstitious. But I am a little stitious.'],
+  bark3: ['goon', 'Why does he keep posing? Is that a move? Is he allowed to do that?'],
+  bark4: ['goon2', 'I\'m a temp! The agency sent me! This is my first day!'],
+  more: ['goon', 'Reinforcements! We brought the guys from the warehouse!'],
+  scarn3: ['scarn', 'Great. More people who don\'t respect me. Like every meeting I\'ve ever run.'],
+  cashier1: ['cashier', 'Um. Sir? Is that... everything?'],
+  scarn4: ['scarn', 'Just the gel. And these breath mints. For after. For the ladies. And for my breath.'],
+  cashier2: ['cashier', 'Do you want a bag?'],
+  scarn5: ['scarn', 'No. I don\'t need a bag. But these guys are gonna need a mop. Because it looks like there\'s gonna be a clean—'],
+  scarn6: ['cashier', 'Cleanup on aisle five. Cleanup on aisle five, please.', { style: 'radio' }],
+  scarn7: ['scarn', 'Hey! That\'s my line! I have been saving that line for three years! ...Fine. I will save it. For a bigger aisle.'],
+  n1: ['narrator', 'Michael Scarn. The best secret agent in the business.'],
+  n2: ['narrator', 'He saved the NFL All-Star Game. The NBA All-Star Game. And the M-B-A All-Star Game. ...That is what it says. I just read it.'],
+  n3: ['narrator', 'But a man named Goldenface took the one thing Scarn loved most. His wife. Catherine Zeta-Scarn.'],
+  n4: ['narrator', 'So Scarn hung up his gun. And became a mild-mannered paper salesman. Which, for the record, is a perfectly good job.'],
+});

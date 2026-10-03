@@ -1,11 +1,11 @@
 /**
- * Collect every voiced line from src/data/script/*.ts into tools/voice/lines.json.
+ * Collect every voiced line from src/shared/data/script/*.ts into tools/voice/lines.json.
  * Run with: npm run voice:export   (Node >= 22 type stripping)
  */
 import { readdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { CAST } from '../../src/data/cast.ts';
+import { CAST } from '../../src/shared/data/cast.ts';
 
 interface Line {
   id: string;
@@ -16,7 +16,7 @@ interface Line {
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
-const dir = join(here, '../../src/data/script');
+const dir = join(here, '../../src/shared/data/script');
 const out: { id: string; text: string; voice: string; speed: number; fx: string; pitch: number; eq: string }[] = [];
 
 for (const f of readdirSync(dir).sort()) {

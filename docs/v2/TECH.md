@@ -30,7 +30,7 @@ movement (twin-stick aim, dodge roll, skating). We write our own controller on R
 - **Consequence:** Gameplay logic stays in TypeScript. If profiling ever shows a hot CPU path
   (unlikely at this scale), a small Rust crate built with `wasm-pack` can be added for that path alone.
 
-### ADR-2: v2 is a separate app in `v2/`; v1 stays at the repo root and stays deployed
+### ADR-2 (superseded 2026-10-03 by ADR-10): v2 was a separate app in `v2/`
 - v1 is live on Vercel. v2 is built side by side in `v2/` (its own `package.json` and Vite config).
 - Shared, engine-agnostic v1 modules are imported, not copied, through the Vite/TS alias `@v1/*` →
   `../src/*`: `data/script/*`, `data/cast.ts`, `audio/*` (engine, music, songs, sfx, synth, voice),
@@ -93,11 +93,21 @@ movement (twin-stick aim, dodge roll, skating). We write our own controller on R
   movement uses `camBasis(yaw)`. Fourth-wall barriers are a dedicated BARRIER layer that stops
   characters but never rays or the camera.
 
+### ADR-10: The 3D game is the repo root; v1 is archived in `legacy/`
+- User direction: deploy only the new game, with no `v2` subfolder. The app moved from `v2/` to the root
+  (history kept via `git mv`). The original Phaser game moved to `legacy/`, kept runnable, not deployed.
+- The v1 modules the new game uses were copied into `src/shared/` (alias `@shared/*`, previously
+  `@v1/*` → `../src/*`): `audio/`, `data/cast.ts` + `data/script/`, `state/{store,settings,storage}.ts`,
+  `styles/fonts.css`, `game/art/{newspaper,canvas}.ts`. `legacy/src` keeps its own copy.
+- `public/` (voices, fonts) stays at the root; `legacy/vite.config.ts` points `publicDir` at `../public`.
+- Vercel: plain Vite app at the root, so no Root Directory or "files outside root" settings are needed.
+
 ## 3. Directory layout (v2)
 
 ```
-v2/
-  index.html, package.json, vite.config.ts, tsconfig.json, runek.config.json
+(repo root)
+  index.html, package.json, vite.config.ts, tsconfig.json, runek.config.json, vercel.json
+  legacy/           the original 2D Phaser game (archived)
   src/
     main.tsx, App.tsx
     runek/            vendored runek components (CLI-managed; edit freely, we own them)

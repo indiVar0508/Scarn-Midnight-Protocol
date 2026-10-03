@@ -8,7 +8,7 @@ Render voice-casting candidates so they can be compared by ear in the v2 auditio
 
 Reads tools/voice/audition.json, writes public/voice-audition/<character>-<n>.mp3 plus
 index.json. Same Kokoro + ffmpeg chain as generate.py, so a pick drops straight into
-src/data/cast.ts. Stock Kokoro voices only; nothing is cloned from a recording.
+src/shared/data/cast.ts. Stock Kokoro voices only; nothing is cloned from a recording.
 """
 import json
 import os
