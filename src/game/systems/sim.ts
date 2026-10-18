@@ -1,16 +1,18 @@
 import { Vector3 } from 'three';
-import type { RapierRigidBody } from '@react-three/rapier';
+import type { BodyApi, ColliderApi } from '../../physics/world';
 
 /** Fixed physics/gameplay step (matches <Physics timeStep>). */
 export const STEP = 1 / 60;
 
-/** Something the player can walk up to and use (E). */
+/** Something the player can walk up to and use (E). Reach is a rapier sensor: `inReach` is
+ *  set by its intersection events with the player's capsule. */
 export interface Interactable {
   id: string;
   pos: Vector3;
   radius: number;
   label: string;
   enabled: boolean;
+  inReach: boolean;
   onUse: () => void;
 }
 
@@ -39,7 +41,9 @@ export const sim = {
     aim: new Vector3(0, 1.2, 1),
     iframes: 0,
     alive: true,
-    body: null as RapierRigidBody | null,
+    body: null as BodyApi | null,
+    /** The player's capsule (projectile hits and sensor events name it). */
+    collider: null as ColliderApi | null,
     /** Seconds since the last pose, for "pose after a knockdown" scoring. */
     lastPose: -99,
   },
@@ -74,6 +78,7 @@ export function resetSim(): void {
   sim.player.iframes = 0;
   sim.player.alive = true;
   sim.player.body = null;
+  sim.player.collider = null;
   sim.player.lastPose = -99;
   sim.hittables.clear();
   sim.cam.yaw = 0;

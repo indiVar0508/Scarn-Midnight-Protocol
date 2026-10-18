@@ -1,0 +1,1708 @@
+{
+  "version": 1,
+  "meta": {
+    "title": "Aisle Five",
+    "description": "Dunder Mifflin's warehouse dressed as a supermarket, with the bullpen behind the camera.",
+    "authors": [
+      {
+        "name": "Threat Level Midnight: Director's Cut"
+      }
+    ],
+    "license": "MIT"
+  },
+  "nodes": [
+    {
+      "type": "SetFloor",
+      "id": "floor",
+      "props": {
+        "size": [
+          38,
+          18
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "finish": "concrete",
+        "color": "#7f7c75",
+        "seed": 7,
+        "marks": [
+          [
+            0,
+            8.2,
+            38,
+            0.12
+          ],
+          [
+            -1.5,
+            -4.6,
+            33,
+            0.08
+          ],
+          [
+            -1.5,
+            -0.6,
+            33,
+            0.08
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Wall",
+      "id": "wall-back",
+      "props": {
+        "width": 38,
+        "height": 6,
+        "position": [
+          0,
+          0,
+          -8.6
+        ]
+      }
+    },
+    {
+      "type": "Wall",
+      "id": "wall-west",
+      "props": {
+        "width": 18,
+        "height": 6,
+        "position": [
+          -19,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          1.5708,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Wall",
+      "id": "wall-east",
+      "props": {
+        "width": 18,
+        "height": 6,
+        "position": [
+          19,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ]
+      }
+    },
+    {
+      "type": "WallSkin",
+      "id": "skin-back",
+      "props": {
+        "width": 38,
+        "height": 6,
+        "position": [
+          0,
+          0,
+          -8.6
+        ]
+      }
+    },
+    {
+      "type": "WallSkin",
+      "id": "skin-west",
+      "props": {
+        "width": 18,
+        "height": 6,
+        "position": [
+          -19,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          1.5708,
+          0
+        ]
+      }
+    },
+    {
+      "type": "WallSkin",
+      "id": "skin-east",
+      "props": {
+        "width": 18,
+        "height": 6,
+        "position": [
+          19,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Rafters",
+      "id": "roof",
+      "props": {
+        "position": [
+          0,
+          0,
+          -0.15
+        ],
+        "size": [
+          38,
+          17.3
+        ],
+        "height": 6,
+        "spacing": 2,
+        "skylights": [
+          -10,
+          0,
+          10
+        ]
+      }
+    },
+    {
+      "type": "LightShafts",
+      "id": "skylight-shafts",
+      "props": {
+        "xs": [
+          -10,
+          0,
+          10
+        ],
+        "height": 6,
+        "depth": 14
+      }
+    },
+    {
+      "type": "FluorescentRow",
+      "id": "tubes-back",
+      "props": {
+        "position": [
+          -1.5,
+          5.0,
+          -4.6
+        ],
+        "count": 6,
+        "length": 2.4,
+        "gap": 3.0,
+        "drop": 0.45,
+        "seed": 3
+      }
+    },
+    {
+      "type": "FluorescentRow",
+      "id": "tubes-front",
+      "props": {
+        "position": [
+          -1.5,
+          5.0,
+          1.4
+        ],
+        "count": 6,
+        "length": 2.4,
+        "gap": 3.0,
+        "drop": 0.45,
+        "flicker": 4,
+        "seed": 5
+      }
+    },
+    {
+      "type": "DustMotes",
+      "id": "dust",
+      "props": {
+        "position": [
+          0,
+          0,
+          -0.5
+        ],
+        "size": [
+          36,
+          5,
+          15
+        ],
+        "count": 700,
+        "seed": 9
+      }
+    },
+    {
+      "type": "PalletRack",
+      "id": "rack-west-a",
+      "props": {
+        "position": [
+          -18.25,
+          0,
+          -3.4
+        ],
+        "rotation": [
+          0,
+          1.5708,
+          0
+        ],
+        "bays": 2,
+        "levels": 3,
+        "height": 4.6,
+        "seed": 12
+      }
+    },
+    {
+      "type": "PalletRack",
+      "id": "rack-west-b",
+      "props": {
+        "position": [
+          -18.25,
+          0,
+          3.4
+        ],
+        "rotation": [
+          0,
+          1.5708,
+          0
+        ],
+        "bays": 2,
+        "levels": 3,
+        "height": 4.6,
+        "seed": 13
+      }
+    },
+    {
+      "type": "RollDoor",
+      "id": "dock-3",
+      "props": {
+        "position": [
+          18.88,
+          0,
+          5.4
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ],
+        "width": 3.0,
+        "height": 3.4,
+        "number": 3
+      }
+    },
+    {
+      "type": "ExitSign",
+      "id": "exit-west",
+      "props": {
+        "position": [
+          -18.88,
+          2.7,
+          -0.2
+        ],
+        "rotation": [
+          0,
+          1.5708,
+          0
+        ]
+      }
+    },
+    {
+      "type": "ExitSign",
+      "id": "exit-back",
+      "props": {
+        "position": [
+          -16,
+          2.95,
+          -8.47
+        ]
+      }
+    },
+    {
+      "type": "FreezerCase",
+      "id": "freezer",
+      "props": {
+        "position": [
+          18.45,
+          0,
+          -3.9
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ],
+        "doors": 3,
+        "seed": 4
+      }
+    },
+    {
+      "type": "EndCap",
+      "id": "endcap-a",
+      "props": {
+        "position": [
+          -10.35,
+          0,
+          -2.3
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ],
+        "seed": 2,
+        "lines": [
+          {
+            "text": "MANAGER'S"
+          },
+          {
+            "text": "SPECIAL",
+            "size": 1.2
+          }
+        ]
+      }
+    },
+    {
+      "type": "EndCap",
+      "id": "endcap-b",
+      "props": {
+        "position": [
+          -3.85,
+          0,
+          -2.3
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ],
+        "seed": 3,
+        "lines": [
+          {
+            "text": "BUY ONE"
+          },
+          {
+            "text": "GET ONE",
+            "size": 1.1
+          },
+          {
+            "text": "(paper)",
+            "size": 0.6
+          }
+        ],
+        "colors": [
+          "#f6f4ee",
+          "#e3ecff",
+          "#fff1cf"
+        ]
+      }
+    },
+    {
+      "type": "EndCap",
+      "id": "endcap-c",
+      "props": {
+        "position": [
+          4.65,
+          0,
+          -2.3
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ],
+        "seed": 4,
+        "lines": [
+          {
+            "text": "NEW!"
+          },
+          {
+            "text": "PREMIUM COLORS",
+            "size": 0.7
+          }
+        ],
+        "colors": [
+          "#ffe0e0",
+          "#e2f7e4",
+          "#e3ecff",
+          "#fff1cf"
+        ]
+      }
+    },
+    {
+      "type": "ShoppingCart",
+      "id": "cart-a",
+      "props": {
+        "position": [
+          -12.6,
+          0,
+          1.4
+        ],
+        "rotation": [
+          0,
+          0.5,
+          0
+        ]
+      }
+    },
+    {
+      "type": "ShoppingCart",
+      "id": "cart-b",
+      "props": {
+        "position": [
+          -6.4,
+          0,
+          0.9
+        ],
+        "rotation": [
+          0,
+          -0.35,
+          0
+        ]
+      }
+    },
+    {
+      "type": "ShoppingCart",
+      "id": "cart-c",
+      "props": {
+        "position": [
+          3.8,
+          0,
+          5.6
+        ],
+        "rotation": [
+          0,
+          1.25,
+          0
+        ]
+      }
+    },
+    {
+      "type": "ShoppingCart",
+      "id": "cart-d",
+      "props": {
+        "position": [
+          12.8,
+          0,
+          4.2
+        ],
+        "rotation": [
+          0,
+          0.2,
+          0
+        ],
+        "handle": "#2d6cdf"
+      }
+    },
+    {
+      "type": "ShoppingCart",
+      "id": "cart-e",
+      "props": {
+        "position": [
+          9.2,
+          0,
+          -0.4
+        ],
+        "rotation": [
+          0,
+          -1.4,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Barrier",
+      "id": "fourth-wall",
+      "props": {
+        "position": [
+          0,
+          1.5,
+          8.35
+        ],
+        "size": [
+          38,
+          3,
+          0.2
+        ]
+      }
+    },
+    {
+      "type": "Poster",
+      "id": "dunder-mifflin-banner",
+      "props": {
+        "position": [
+          -6,
+          4.6,
+          -8.48
+        ],
+        "size": [
+          8,
+          1.2
+        ],
+        "lines": [
+          {
+            "text": "Dunder Mifflin",
+            "font": "serif",
+            "size": 1.4
+          },
+          {
+            "text": "PAPER COMPANY, INC. · SCRANTON BRANCH",
+            "size": 0.55,
+            "font": "sans"
+          }
+        ],
+        "background": "#1d2d5c",
+        "color": "#f4f1e8"
+      }
+    },
+    {
+      "type": "Poster",
+      "id": "days-without-accident",
+      "props": {
+        "position": [
+          -12,
+          3.0,
+          -8.48
+        ],
+        "size": [
+          1.7,
+          1.2
+        ],
+        "lines": [
+          {
+            "text": "THIS WAREHOUSE HAS GONE",
+            "size": 0.55
+          },
+          {
+            "text": "0",
+            "size": 1.6,
+            "color": "#c0392b",
+            "font": "marker"
+          },
+          {
+            "text": "DAYS WITHOUT AN ACCIDENT",
+            "size": 0.55
+          }
+        ],
+        "border": 0.04
+      }
+    },
+    {
+      "type": "Poster",
+      "id": "pretzel-day",
+      "props": {
+        "position": [
+          8,
+          2.95,
+          -8.48
+        ],
+        "size": [
+          0.8,
+          1.0
+        ],
+        "lines": [
+          {
+            "text": "PRETZEL",
+            "size": 1.1
+          },
+          {
+            "text": "DAY",
+            "size": 1.1
+          },
+          {
+            "text": "free pretzels! lobby",
+            "size": 0.45,
+            "font": "marker"
+          }
+        ],
+        "background": "#ffe08a",
+        "font": "bebas",
+        "tilt": 0.04
+      }
+    },
+    {
+      "type": "Poster",
+      "id": "fun-run",
+      "props": {
+        "position": [
+          9.2,
+          2.85,
+          -8.48
+        ],
+        "size": [
+          0.75,
+          1.0
+        ],
+        "lines": [
+          {
+            "text": "MICHAEL SCOTT'S",
+            "size": 0.45
+          },
+          {
+            "text": "DUNDER MIFFLIN",
+            "size": 0.45
+          },
+          {
+            "text": "SCRANTON",
+            "size": 0.45
+          },
+          {
+            "text": "MEREDITH PALMER MEMORIAL",
+            "size": 0.42
+          },
+          {
+            "text": "CELEBRITY RABIES AWARENESS",
+            "size": 0.4
+          },
+          {
+            "text": "PRO-AM FUN RUN RACE",
+            "size": 0.45
+          },
+          {
+            "text": "FOR THE CURE",
+            "size": 0.6,
+            "color": "#c0392b"
+          }
+        ],
+        "font": "sans",
+        "tilt": -0.05
+      }
+    },
+    {
+      "type": "Poster",
+      "id": "dundies",
+      "props": {
+        "position": [
+          10.4,
+          2.92,
+          -8.48
+        ],
+        "size": [
+          0.8,
+          0.9
+        ],
+        "lines": [
+          {
+            "text": "THE DUNDIES",
+            "font": "serif",
+            "size": 0.9
+          },
+          {
+            "text": "Chili’s · Thursday",
+            "size": 0.5,
+            "font": "marker"
+          }
+        ],
+        "background": "#262626",
+        "color": "#e8c22e",
+        "tilt": 0.03
+      }
+    },
+    {
+      "type": "Poster",
+      "id": "wuphf",
+      "props": {
+        "position": [
+          18.88,
+          3.2,
+          -3
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ],
+        "size": [
+          3.6,
+          0.9
+        ],
+        "lines": [
+          {
+            "text": "WUPHF.com",
+            "font": "sans",
+            "size": 1.2
+          },
+          {
+            "text": "one message. every device.",
+            "size": 0.45,
+            "font": "type"
+          }
+        ],
+        "background": "#ffffff",
+        "color": "#d4402c"
+      }
+    },
+    {
+      "type": "Door",
+      "id": "darryls-door",
+      "props": {
+        "position": [
+          -16,
+          0,
+          -8.5
+        ]
+      }
+    },
+    {
+      "type": "Poster",
+      "id": "darryls-sign",
+      "props": {
+        "position": [
+          -16,
+          2.55,
+          -8.48
+        ],
+        "size": [
+          1.3,
+          0.3
+        ],
+        "lines": [
+          {
+            "text": "WAREHOUSE OFFICE · KNOCK"
+          }
+        ],
+        "background": "#f2efe6"
+      }
+    },
+    {
+      "type": "Hanging",
+      "id": "sign-aisle-5",
+      "props": {
+        "position": [
+          2,
+          3.7,
+          0.6
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ],
+        "size": [
+          2.4,
+          0.9
+        ],
+        "lines": [
+          {
+            "text": "AISLE 5"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Hanging",
+      "id": "sign-food",
+      "props": {
+        "position": [
+          -7.5,
+          3.5,
+          0.6
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ],
+        "size": [
+          1.7,
+          0.75
+        ],
+        "lines": [
+          {
+            "text": "FOOD"
+          },
+          {
+            "text": "(paper)",
+            "size": 0.45
+          }
+        ]
+      }
+    },
+    {
+      "type": "Hanging",
+      "id": "sign-also-food",
+      "props": {
+        "position": [
+          9,
+          3.5,
+          0.6
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ],
+        "size": [
+          1.9,
+          0.75
+        ],
+        "lines": [
+          {
+            "text": "ALSO FOOD"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Forklift",
+      "id": "forklift",
+      "props": {
+        "position": [
+          -12.5,
+          0,
+          5.6
+        ],
+        "rotation": [
+          0,
+          0.5,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Baler",
+      "id": "baler",
+      "props": {
+        "position": [
+          17,
+          0,
+          -6.4
+        ],
+        "rotation": [
+          0,
+          -0.3,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Crate",
+      "id": "crate-a",
+      "props": {
+        "position": [
+          -16.5,
+          0,
+          6.3
+        ],
+        "size": 1,
+        "seed": 3
+      }
+    },
+    {
+      "type": "Crate",
+      "id": "crate-b",
+      "props": {
+        "position": [
+          -15.3,
+          0,
+          6.8
+        ],
+        "size": 0.8,
+        "seed": 4
+      }
+    },
+    {
+      "type": "Poster",
+      "id": "schrute-farms",
+      "props": {
+        "position": [
+          -16.5,
+          0.55,
+          6.82
+        ],
+        "size": [
+          0.8,
+          0.45
+        ],
+        "lines": [
+          {
+            "text": "SCHRUTE FARMS",
+            "size": 0.8
+          },
+          {
+            "text": "BEETS · B&B · AGROTOURISM",
+            "size": 0.45
+          }
+        ],
+        "background": "#e9dcc0",
+        "color": "#5b1a2a",
+        "board": false
+      }
+    },
+    {
+      "type": "Poster",
+      "id": "food-2-for-5",
+      "props": {
+        "position": [
+          3.2,
+          1.3,
+          2.8
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ],
+        "size": [
+          0.9,
+          0.7
+        ],
+        "lines": [
+          {
+            "text": "FOOD"
+          },
+          {
+            "text": "2 for $5",
+            "size": 0.6
+          }
+        ],
+        "font": "marker",
+        "background": "#c9a777"
+      }
+    },
+    {
+      "type": "Counter",
+      "id": "checkout",
+      "props": {
+        "position": [
+          15.5,
+          0,
+          1
+        ],
+        "rotation": [
+          0,
+          1.5708,
+          0
+        ],
+        "length": 3
+      }
+    },
+    {
+      "type": "Register",
+      "id": "register",
+      "props": {
+        "position": [
+          15.5,
+          0.95,
+          -0.1
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Mug",
+      "id": "boss-mug",
+      "props": {
+        "position": [
+          15.4,
+          0.945,
+          2.0
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ],
+        "text": "WORLD'S BEST BOSS"
+      }
+    },
+    {
+      "type": "Cast",
+      "id": "cashier",
+      "props": {
+        "who": "cashier",
+        "position": [
+          16.8,
+          0,
+          1
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Poster",
+      "id": "checkout-sign",
+      "props": {
+        "position": [
+          14.2,
+          3.0,
+          1
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ],
+        "size": [
+          2.6,
+          0.75
+        ],
+        "lines": [
+          {
+            "text": "CHECKOUT"
+          },
+          {
+            "text": "10 ITEMS OR LESS  (fewer. — Oscar)",
+            "size": 0.5,
+            "font": "marker",
+            "color": "#a33"
+          }
+        ]
+      }
+    },
+    {
+      "type": "SetFloor",
+      "id": "bullpen-floor",
+      "props": {
+        "size": [
+          38,
+          7
+        ],
+        "position": [
+          0,
+          0,
+          12.5
+        ],
+        "color": "#59606b"
+      }
+    },
+    {
+      "type": "Wall",
+      "id": "bullpen-wall",
+      "props": {
+        "width": 38,
+        "height": 3.2,
+        "position": [
+          0,
+          0,
+          16
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ],
+        "color": "#c8c2b4"
+      }
+    },
+    {
+      "type": "Wall",
+      "id": "header-wall",
+      "props": {
+        "width": 38,
+        "height": 2.8,
+        "position": [
+          0,
+          3.2,
+          8.62
+        ],
+        "color": "#b9b3a5"
+      }
+    },
+    {
+      "type": "DropCeiling",
+      "id": "bullpen-ceiling",
+      "props": {
+        "position": [
+          0,
+          3.2,
+          12.35
+        ],
+        "size": [
+          38,
+          7.3
+        ]
+      }
+    },
+    {
+      "type": "Wall",
+      "id": "bullpen-west",
+      "props": {
+        "width": 7.4,
+        "height": 3.2,
+        "position": [
+          -19,
+          0,
+          12.35
+        ],
+        "rotation": [
+          0,
+          1.5708,
+          0
+        ],
+        "color": "#c8c2b4"
+      }
+    },
+    {
+      "type": "Wall",
+      "id": "bullpen-east",
+      "props": {
+        "width": 7.4,
+        "height": 3.2,
+        "position": [
+          19,
+          0,
+          12.35
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ],
+        "color": "#c8c2b4"
+      }
+    },
+    {
+      "type": "CameraTripod",
+      "id": "camera-a",
+      "props": {
+        "position": [
+          -2.2,
+          0,
+          9.5
+        ]
+      }
+    },
+    {
+      "type": "BoomMic",
+      "id": "boom",
+      "props": {
+        "position": [
+          3.5,
+          2.4,
+          9.6
+        ],
+        "rotation": [
+          0.18,
+          0.15,
+          0
+        ],
+        "length": 3.4
+      }
+    },
+    {
+      "type": "DirectorChair",
+      "id": "director-chair",
+      "props": {
+        "position": [
+          0.6,
+          0,
+          10.6
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ],
+        "name": "MICHAEL SCOTT · DIRECTOR"
+      }
+    },
+    {
+      "type": "Group",
+      "id": "crew-kevin",
+      "props": {
+        "position": [
+          -2.6,
+          0,
+          10.4
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ]
+      },
+      "children": [
+        {
+          "type": "Cast",
+          "id": "kevin",
+          "props": {
+            "who": "kevin"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Group",
+      "id": "crew-pam",
+      "props": {
+        "position": [
+          3.4,
+          0,
+          9.9
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ]
+      },
+      "children": [
+        {
+          "type": "Cast",
+          "id": "pam",
+          "props": {
+            "who": "pam"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Group",
+      "id": "crew-angela",
+      "props": {
+        "position": [
+          6.2,
+          0,
+          10.6
+        ],
+        "rotation": [
+          0,
+          2.74159,
+          0
+        ]
+      },
+      "children": [
+        {
+          "type": "Cast",
+          "id": "angela",
+          "props": {
+            "who": "angela"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Group",
+      "id": "crew-stanley",
+      "props": {
+        "position": [
+          9.2,
+          0,
+          12.4
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ]
+      },
+      "children": [
+        {
+          "type": "OfficeChair",
+          "id": "stanley-chair",
+          "props": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              0,
+              3.14159,
+              0
+            ],
+            "back": "high",
+            "arms": true,
+            "color": "#26282c",
+            "seed": 7
+          }
+        },
+        {
+          "type": "Cast",
+          "id": "stanley",
+          "props": {
+            "who": "stanley"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Group",
+      "id": "crew-oscar",
+      "props": {
+        "position": [
+          -7.2,
+          0,
+          12.2
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ]
+      },
+      "children": [
+        {
+          "type": "OfficeChair",
+          "id": "oscar-chair",
+          "props": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              0,
+              3.14159,
+              0
+            ],
+            "back": "high",
+            "arms": true,
+            "color": "#26282c",
+            "seed": 5
+          }
+        },
+        {
+          "type": "Cast",
+          "id": "oscar",
+          "props": {
+            "who": "oscar"
+          }
+        }
+      ]
+    },
+    {
+      "type": "OfficeDesk",
+      "id": "desk-oscar",
+      "props": {
+        "position": [
+          -7.2,
+          0,
+          13.4
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ],
+        "mug": "Oscar"
+      }
+    },
+    {
+      "type": "OfficeDesk",
+      "id": "desk-stanley",
+      "props": {
+        "position": [
+          9.2,
+          0,
+          13.6
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ],
+        "mug": "Stanley"
+      }
+    },
+    {
+      "type": "OfficeDesk",
+      "id": "desk-west",
+      "props": {
+        "position": [
+          -12,
+          0,
+          13.4
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ]
+      }
+    },
+    {
+      "type": "OfficeDesk",
+      "id": "desk-east",
+      "props": {
+        "position": [
+          13.5,
+          0,
+          13.4
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ]
+      }
+    },
+    {
+      "type": "CubicleWall",
+      "id": "cubicle-west",
+      "props": {
+        "position": [
+          -9.6,
+          0,
+          12.6
+        ],
+        "rotation": [
+          0,
+          1.5708,
+          0
+        ]
+      }
+    },
+    {
+      "type": "CubicleWall",
+      "id": "cubicle-east",
+      "props": {
+        "position": [
+          11.6,
+          0,
+          12.6
+        ],
+        "rotation": [
+          0,
+          1.5708,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Poster",
+      "id": "shoot-day",
+      "props": {
+        "position": [
+          0,
+          2.1,
+          15.885
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ],
+        "size": [
+          3.2,
+          1.4
+        ],
+        "lines": [
+          {
+            "text": "THREAT LEVEL MIDNIGHT",
+            "size": 1.1
+          },
+          {
+            "text": "shoot day 1,412",
+            "size": 0.6,
+            "font": "marker",
+            "color": "#1d2d5c"
+          },
+          {
+            "text": "NO LAUGHING ON SET  — Pam",
+            "size": 0.5,
+            "font": "marker",
+            "color": "#c0392b"
+          }
+        ],
+        "background": "#fbfbf8",
+        "border": 0.03,
+        "borderColor": "#9aa3ad"
+      }
+    },
+    {
+      "type": "Slab",
+      "id": "panel-0",
+      "props": {
+        "position": [
+          -9,
+          3.15,
+          12.5
+        ],
+        "size": [
+          1.2,
+          0.04,
+          0.6
+        ],
+        "color": "#f4f2ea",
+        "glow": true
+      }
+    },
+    {
+      "type": "Slab",
+      "id": "panel-1",
+      "props": {
+        "position": [
+          0,
+          3.15,
+          12.5
+        ],
+        "size": [
+          1.2,
+          0.04,
+          0.6
+        ],
+        "color": "#f4f2ea",
+        "glow": true
+      }
+    },
+    {
+      "type": "Slab",
+      "id": "panel-2",
+      "props": {
+        "position": [
+          9,
+          3.15,
+          12.5
+        ],
+        "size": [
+          1.2,
+          0.04,
+          0.6
+        ],
+        "color": "#f4f2ea",
+        "glow": true
+      }
+    },
+    {
+      "type": "Desk",
+      "id": "kitchenette",
+      "props": {
+        "position": [
+          -15.5,
+          0,
+          15.2
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ],
+        "width": 1.8,
+        "depth": 0.6,
+        "height": 0.9,
+        "base": "panels",
+        "color": "#d8d2c4",
+        "baseColor": "#9a8f7c"
+      }
+    },
+    {
+      "type": "CoffeeMachine",
+      "id": "coffee",
+      "props": {
+        "position": [
+          -15.9,
+          0.9,
+          15.2
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ],
+        "kind": "drip"
+      }
+    },
+    {
+      "type": "Plant",
+      "id": "plant-a",
+      "props": {
+        "position": [
+          -17.8,
+          0,
+          15.2
+        ],
+        "height": 1.3,
+        "seed": 3
+      }
+    },
+    {
+      "type": "Plant",
+      "id": "plant-b",
+      "props": {
+        "position": [
+          17.6,
+          0,
+          15.2
+        ],
+        "height": 1.6,
+        "seed": 8
+      }
+    },
+    {
+      "type": "Clock",
+      "id": "clock",
+      "props": {
+        "position": [
+          6,
+          2.6,
+          15.88
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ],
+        "radius": 0.22,
+        "seed": 2
+      }
+    },
+    {
+      "type": "Whiteboard",
+      "id": "shot-list",
+      "props": {
+        "position": [
+          -4.4,
+          0,
+          15.6
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ],
+        "width": 1.8,
+        "height": 1.1,
+        "mount": "stand",
+        "text": "SHOT LIST\n1. Aisle five (CLEAN UP)\n2. Scarn Manor\n3. Cherokee Jack\n- NO improv (Michael)",
+        "doodles": true
+      }
+    },
+    {
+      "type": "Monitor",
+      "id": "monitor-oscar",
+      "props": {
+        "position": [
+          -7.2,
+          0.75,
+          13.75
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ],
+        "on": true,
+        "seed": 1
+      }
+    },
+    {
+      "type": "Monitor",
+      "id": "monitor-stanley",
+      "props": {
+        "position": [
+          9.2,
+          0.75,
+          13.95
+        ],
+        "rotation": [
+          0,
+          3.14159,
+          0
+        ],
+        "on": true,
+        "seed": 2
+      }
+    }
+  ]
+}

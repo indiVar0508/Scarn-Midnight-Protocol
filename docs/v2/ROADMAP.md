@@ -57,6 +57,101 @@ Goal: testers voluntarily retry with a plan to improve. Everything else waits on
 ## Progress log
 (newest first; one entry per session: what was done, what's next, gotchas)
 
+- **2026-10-19 (session 3, references and Scenes 2–3):** User: "some references from scene 1 are
+  removed like 0 day without incident… scene 2 and scene 3 are a bit dull". Nothing was removed:
+  twelve wall posters sat at or inside their walls (TECH gotcha 34) — Scene 1's banner, "0 days",
+  Pretzel Day, fun run, Dundies, WUPHF and the "NO LAUGHING ON SET" call sheet; Scene 2's "SCARN
+  MANOR", self-portrait, "WORLD'S BEST SPY", seal and the THREAT LEVEL whiteboard (never visible).
+  Moved them proud of the surface, lifted Scene 1's flyers above the back shelves, and added a set
+  test (red on all twelve before). For "dull" the user picked all four: bare sets, flat lighting,
+  not much to do, lifeless crew — one scene at a time, Scene 2 first (design → spec → plan).
+  Then: "lets not keep bad characters looking only black lets have mix colors". The henchmen were
+  one look with near-black skin standing in for a ski mask. Now four looks (`GOONS` in `cast.ts`,
+  dealt by seed: a mix of skin tones, red/navy/green/gold knit masks drawn by `CastFigure` over the
+  head, charcoal/burgundy/navy/brown suits, gold ties and shades kept as the gang uniform);
+  `cast.test.ts` holds it. Scene 1 A/B: same 41 programs, load within noise (10.0/10.2 s one look,
+  9.4/10.3 s four, browser busy in the background); `wrap.mjs` clears both waves.
+- **2026-10-18 (session 3, load time):** User: "some lag, it takes time to load" (asked to apply the
+  ponytail approach: delete work before adding code). First finding: the laptop was running four
+  NLP training processes (~14 of 16 threads) in power-saver mode — Scene 1 took 31–42 s and ran at
+  12–16 fps then, ~11 s / ~40 fps idle. Game-side, measured with Chrome traces and an A/B against a
+  build of the session's starting point (idle laptop, first visit, from the real click): Scene 1
+  11.5–12.1 s → 9.1–9.4 s, Scene 2 7.9–8.3 → 6.4–6.5 s, Scene 3 6.2–6.3 → 5.3–5.8 s and its freeze on
+  reaching the lake 1.7 s → 0.55 s. Cuts (TECH §9 item 33): static loading card (its pulse made the
+  GPU thread present every vsync), unlit RoomEnvironment for the env map (three lit programs gone),
+  one shared program for the figure materials (5 → 2 there), Scene 3's lake warmed behind the card
+  (`take.location`), physics WASM prefetched on the title. Codex review: three findings, all fixed —
+  the shared wrap patch dropped three's sheen energy compensation from the direct diffuse term
+  (fabrics a little too bright; skin had carried that bug since its wrap was added), the env map's
+  PMREM render target was never disposed (only its texture), and the lake's 8 s controls hint could
+  run out behind its loading card (now counts rendered frames). Looked at and left: shadow casters (only
+  ~37 of 306 are small; the rest are set pieces whose shadows show), a per-line-change hitch (did not
+  reproduce on an idle machine). Perf tooling: `perf.mjs` times from the real pointerdown (Playwright
+  had been holding clicks ~10 s on the title, inflating some earlier numbers), waits out a second
+  card, `BREAKDOWN=1 VARIANTS=1` lists programs and draws. Next, biggest first: Scene 1's ~980 draws
+  per frame (half the shadow pass; merging static set geometry per material is the lever for play
+  fps), the remaining one-off program variants (flat-shaded plant, double-sided props, physical
+  glass/teeth: ~0.1–0.3 s each), bloom on the medium tier (3 programs + 15 passes a frame).
+
+- **2026-10-12 (session 3, audio):** User: "audio seems to break off sometimes in chapter 3". Two
+  causes, both measured with new probes (`tools/qa/voice-cuts.mjs`, `tools/qa/music-load.mjs`):
+  (1) every synthesized music note and sound effect stayed connected to the mix after it stopped,
+  until GC, and Chrome's audio thread kept processing it; the Scene 3 montage held that thread at
+  ~97% of a core on the title screen alone, and in-game the audio clock ran at 0.35–0.8× real time
+  (Jack's 8.3 s line took 22 s; music off: 0 slow seconds; graphics tier made no difference). Fixed
+  with a per-note bus disconnected when the note's last source ends (TECH §9 item 32): montage
+  74–97% → ~40% of a core, Scene 3 in-game 0 of 293 seconds slow, every line at its recorded length.
+  (2) any mouse click during a scripted moment skipped the line: the click that captures the mouse
+  cut the first line, and shooting/dodging just after a trial cut two lines in a row. Mouse skipping
+  removed (Enter/E only, not on key repeat). Ruled out: missing or stale voice files (all 453
+  current), late fetches (every line starts within 15 ms). New unit test `synth.test.ts` (fake
+  AudioContext, red on the old code).
+
+- **2026-10-11 (session 3, performance):** User: "very laggy, takes time to load characters" (an Intel
+  UHD laptop; the RTX 4060 is on nouveau, so Chrome draws on the Intel GPU). Built
+  `tools/qa/perf.mjs` (real GPU via ANGLE/GL; SwiftShader QA had hidden all of this). Scene 1 before:
+  25–36 s to playable with one 7–13 s frozen frame (shader compiles), more stalls as characters built,
+  10–20 fps in play. Causes and fixes (TECH §9 items 24, 28–31): the Intel GPU got the `high` tier →
+  new `medium` tier + DPR cap; 8 point lights made every lit shader ~6× bigger → removed, faked with
+  floor pools, fixture rows instanced; shaders compiled on first draw → per-take `Warmup` behind a
+  "Lighting the set…" card (r184 traps: render-target program keys, PCFSoft→PCF swap, `compileAsync`
+  polling gaps, info-log sync reads); runek figure builds on the main thread → worker pool, plus a
+  queue bug that never built while paused. After (same laptop, click to playable): ~14 s first visit
+  / ~9 s returning in a production build, ~16 s on the dev server, then 33–45 fps with no frame over
+  100 ms. Tried and reverted: environment
+  map on metals only (30–40% darker, no compile saving). Codex review found three real issues, all
+  fixed: R3F reset the DPR cap on every Canvas re-render (now the Canvas `dpr` prop, tier read from a
+  probe context), Esc during loading let a 15 s cap drop the card with no frames rendered, and a
+  StrictMode replay released the script gate early (now one gate per take, opened only by its
+  warmup). Low tier (software rendering) keeps figures coarse; QA scripts wait on game state
+  (`tools/qa/stage.mjs`, reach/focus waits) instead of fixed sleeps. Next: cut draw calls
+  (~1,000/frame, CPU-bound), fewer material variants (each lit program ~100–250 ms to compile), then
+  Scene 4.
+
+- **2026-10-10 (session 3, Chapter 1 look pass):** User: "chapter 1 looks basic; improve character
+  textures via runek". runek re-vendored at 0.14.0 (drive patch re-applied). Characters: procedural
+  fabric/skin/hair detail added to runek `Person`'s shared materials; suits use runek's new `blazer`
+  (lapels, deep V) with a shaped tie, knot and button. Aisle Five: concrete slab (joints, stains, tyre
+  scuffs), painted block walls, roof deck with bar joists, duct and skylights, hanging tube rows (one
+  flickers), pallet racking of DM cases, dock door + bollards, EXIT signs, freezer, end caps, five
+  shoveable carts (dynamic rapier bodies; they knock goons down), register, dust motes, a closed bullpen
+  (header wall, drop ceiling, runek OfficeChair/CoffeeMachine/Whiteboard/Clock/Plant/Monitor). All placed
+  in `aisle-five.world.json` and checked by runek `checkWorld`. Post: AO, bloom, ACES, vignette, grain;
+  procedural environment map (high tier only). Fixed a stale `sim.player.body/collider` after the physics
+  world rebuilt (dev StrictMode): teleports were ignored and goon hits on Scarn weren't counted (TECH §9.26).
+  Removed vendored runek `Bookshelf` (unused; unchecked `href` navigation). Look-dev: `tools/qa/aisle-look.mjs`.
+  Next: Scene 4.
+
+- **2026-10-04 → 10-10 (session 3, Rust physics):** User: use Rust rapier compiled to WASM and integrate runek
+  with it, no bypasses (TECH ADR-11). Built `crates/tlm-physics` (rapier3d 0.36 + wasm-bindgen; bodies,
+  colliders, sensors, events, ray casts, KCC, Rust projectiles), a TS API, and a drop-in `@react-three/rapier`
+  facade so runek's components and `<World>` run unmodified on it. JS rapier removed. Gameplay moved onto
+  rapier: KCC, Rust ray casts, Rust projectiles, sensors for interactables/mop/gates/finish line. Every
+  scene's static set is now runek WorldData (`src/sets/*.world.json`) rendered with runek `WorldNodes`, checked
+  by runek `checkWorld` in tests. Fixed: freed-world crash on scene exit, KCC stall, hanging signs 1.5 m too
+  high. Codex review hit its usage limit mid-run (no findings yet); a main-thread review found no
+  bypasses (no JS rapier in src/dist). Next: rerun the Codex review, Scene 4 (The Tryout), touch look, feel pass.
+
 - **2026-10-03 (session 2, restructure):** User wants only the new game deployed. Moved the 3D app from
   `v2/` to the repo root and archived the 2D original in `legacy/` (TECH ADR-10). Shared modules copied
   to `src/shared/` (`@shared` alias). Clean `npm ci` + build pass; QA scripts (`tools/qa/`) pass.

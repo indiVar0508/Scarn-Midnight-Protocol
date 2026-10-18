@@ -9,7 +9,7 @@ import { useKeySource } from './input'
 import { controlsToMap, resolveControls, type WorldControls } from './keyboard'
 import { DEFAULT_PALETTE, type WorldPalette } from './palette'
 import { resolveWorldTime } from './time'
-import type { AvatarView, Vec3, Walker, WorldFog } from './types'
+import type { AvatarView, Interactor, Vec3, Walker, WorldFog } from './types'
 
 export interface WorldProps {
   unit?: number
@@ -55,6 +55,11 @@ export interface WorldProps {
    *  (the editor enables this for the "suggest changes" PNG). Off by default — it can
    *  cost a little performance. */
   preserveDrawingBuffer?: boolean
+  /** Extra WebGL context attributes (e.g. `powerPreference: 'high-performance'` so laptops with
+   *  two GPUs render on the discrete one). Fixed when the canvas is created. */
+  gl?: WebGLContextAttributes
+  /** Canvas pixel-ratio range (R3F's `dpr`; default `[1, 2]`). */
+  dpr?: number | [number, number]
   debug?: boolean
   children?: ReactNode
 }
@@ -76,6 +81,8 @@ export function World({
   avatar,
   onPointerMissed,
   preserveDrawingBuffer = false,
+  gl,
+  dpr,
   debug = false,
   children,
 }: WorldProps) {
@@ -98,6 +105,7 @@ export function World({
 
   const player = useRef<Object3D | null>(null)
   const walkers = useMemo(() => new Set<Walker>(), [])
+  const interactions = useMemo(() => new Set<Interactor>(), [])
 
   const context = useMemo(
     () => ({
@@ -111,8 +119,23 @@ export function World({
       controls: resolvedControls,
       player,
       walkers,
+      interactions,
+      keyboard: keySource,
     }),
-    [unit, gravity, ground, palette, fonts, time, timezone, avatar, resolvedControls, walkers],
+    [
+      unit,
+      gravity,
+      ground,
+      palette,
+      fonts,
+      time,
+      timezone,
+      avatar,
+      resolvedControls,
+      walkers,
+      interactions,
+      keySource,
+    ],
   )
 
   return (
@@ -122,7 +145,8 @@ export function World({
         frameloop={paused ? 'never' : 'always'}
         shadows
         camera={{ position: [6, 4, 6], fov: 60 }}
-        gl={{ preserveDrawingBuffer }}
+        gl={{ ...gl, preserveDrawingBuffer }}
+        dpr={dpr}
         onPointerMissed={onPointerMissed}
       >
         <WorldContext.Provider value={context}>

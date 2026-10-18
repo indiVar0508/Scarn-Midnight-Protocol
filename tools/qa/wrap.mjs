@@ -2,6 +2,7 @@
 // Run with `npm run dev` up: `node tools/qa/wrap.mjs`.
 import { mkdirSync } from 'node:fs';
 import { chromium } from 'playwright';
+import { stageShown } from './stage.mjs';
 const out = process.env.OUT ?? 'tools/qa/out';
 const BASE = process.env.BASE ?? 'http://localhost:5174/';
 const executablePath = process.env.CHROME || undefined; // e.g. a cached Playwright chromium
@@ -14,15 +15,19 @@ page.on('console', (m) => { if (m.type() === 'error') logs.push(`[error] ${m.tex
 await page.goto(BASE);
 await page.locator('.title .btn.primary').click();
 await page.waitForFunction(() => window.__TLM2__, null, { timeout: 30000 });
+await stageShown(page);
 await page.waitForTimeout(2000);
 await page.screenshot({ path: `${out}/05-pyramid.png` });
 const st = () => page.evaluate(() => { const t = window.__TLM2__.take.get(); return { take: t.takeNo, hp: t.hp, down: t.goonsDown, total: t.goonsTotal, status: t.status, notes: t.notes }; });
 // QA assist: shoot every goon (calls the same hit handler a bullet does).
 const zap = () => page.evaluate(() => { const { sim } = window.__TLM2__; for (const h of sim.hittables.values()) h({ point: sim.player.pos.clone(), dir: sim.player.pos.clone().set(1, 0, 0), damage: 9 }); });
-await zap(); await page.waitForTimeout(2600);
+await zap(); // Wave 2 is in when every goon of the take has registered (wave 1's stay registered, down).
+await page.waitForFunction(() => window.__TLM2__.sim.hittables.size >= window.__TLM2__.take.get().goonsTotal, null, { timeout: 60000 });
 console.log('wave1 cleared', JSON.stringify(await st()));
+await page.waitForTimeout(300);
 await zap(); await page.waitForTimeout(800); await page.screenshot({ path: `${out}/06-late-fall.png` });
-await page.waitForTimeout(2500);
+// Goons reel, then fall, in game time: slow under SwiftShader.
+await page.waitForFunction(() => window.__TLM2__.take.get().status === 'wrapped', null, { timeout: 120000 });
 console.log('wave2 cleared', JSON.stringify(await st()));
 await page.screenshot({ path: `${out}/07-review.png` });
 await page.keyboard.press('KeyR'); await page.waitForTimeout(1500);

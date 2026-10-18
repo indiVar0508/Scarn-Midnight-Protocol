@@ -3,6 +3,7 @@
 // Moves Scarn by teleport through the QA hook (walking paths aren't the point here).
 import { mkdirSync } from 'node:fs';
 import { chromium } from 'playwright';
+import { stageShown } from './stage.mjs';
 const BASE = process.env.BASE ?? 'http://localhost:5174/';
 const out = process.env.OUT ?? 'tools/qa/out';
 mkdirSync(out, { recursive: true });
@@ -13,29 +14,37 @@ page.on('console', (m) => m.type() === 'error' && console.log('[error]', m.text(
 const T = () => page.evaluate(() => { const t = window.__TLM2__.take.get(); const s = window.__TLM2__.sim; return { status: t.status, notes: t.notes, busy: s.busy, focus: s.focus?.id ?? null, obj: t.objective }; });
 const tp = (x, z) => page.evaluate(([x, z]) => window.__TLM2__.sim.player.body.setTranslation({ x, y: 0.85, z }, true), [x, z]);
 const skipWhileBusy = async (max = 40) => { for (let i = 0; i < max && (await T()).busy; i++) { await page.keyboard.press('Enter'); await page.waitForTimeout(250); } };
+// Teleport, then wait for the prompt to name the spot (reach is a physics sensor: it updates on
+// the next step, which under SwiftShader can be a second away) before pressing E.
+const reach = async (x, z, id) => {
+  await tp(x, z);
+  await page.waitForFunction((id) => { const f = window.__TLM2__.sim.focus?.id ?? null; return id ? f === id : f !== null; }, id, { timeout: 30000 }).catch(() => {});
+  return (await T()).focus;
+};
 
 await page.goto(BASE + '?unlock=all');
 await page.locator('.scene-row', { hasText: 'One Last Mission' }).click();
 await page.waitForFunction(() => window.__TLM2__, null, { timeout: 30000 });
+await stageShown(page);
 await page.waitForTimeout(3000);
 await page.screenshot({ path: `${out}/s2-01-wake.png` });
 await skipWhileBusy();
 console.log('after intro', JSON.stringify(await T()));
 for (const [id, x, z] of [['portrait', 1.5, -3.2], ['trophies', 3.8, -1.5], ['fire', -2.5, -2.9], ['photo', -4.0, 1.6], ['couch', -2.5, -0.2], ['mug', -1.4, -2.0], ['beet', 3.6, 2.4]]) {
-  await tp(x, z); await page.waitForTimeout(250);
-  const f = (await T()).focus;
+  const f = await reach(x, z, id);
   await page.keyboard.press('KeyE'); await page.waitForTimeout(350);
   await page.keyboard.press('Enter'); await page.waitForTimeout(150);
   console.log(`  ${id}: focus=${f}`);
 }
 await page.screenshot({ path: `${out}/s2-02-manor.png` });
 console.log('after tour', JSON.stringify(await T()));
-await tp(3.8, -3.3); await page.waitForTimeout(300);
+await reach(3.8, -3.3, 'door');
 await page.keyboard.press('KeyE'); await page.waitForTimeout(400);
-await skipWhileBusy(); await page.waitForTimeout(1800);
+await skipWhileBusy();
+await page.waitForFunction(() => /Take a seat/.test(window.__TLM2__.take.get().objective ?? ''), null, { timeout: 60000 }).catch(() => {});
 console.log('office?', JSON.stringify(await T()));
 await page.screenshot({ path: `${out}/s2-03-office.png` });
-await tp(0, 0.2); await page.waitForTimeout(300);
+await reach(0, 0.2, null);
 await page.keyboard.press('KeyE'); await page.waitForTimeout(800);
 // Conversation: answer choices (3 = sit backwards, then 2 = nacho lady), skip lines.
 let flips = 0;

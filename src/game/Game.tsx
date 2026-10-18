@@ -104,22 +104,19 @@ export default function Game({ sceneIndex, onQuit: quitTo, onNext: nextTo }: { s
         else setPaused(true);
       } else if (e.code === 'KeyR' && !e.repeat) retake();
       // Skip the current line during scripted moments (E is the coin's charge key while flipping).
+      // Keys only: the mouse is the gun, the dodge and the click that captures it, and clicks
+      // skipped lines nobody meant to skip. Only the press itself skips, not a held key's repeats.
       else if (!pausedRef.current && (e.code === 'Enter' || (e.code === 'KeyE' && sim.busy && coin.get().phase === 'idle'))) {
         // Claim it: if this skip ends the scene, the same Enter must not "click" the review card.
         e.preventDefault();
-        skipLine();
+        if (!e.repeat) skipLine();
       }
     };
-    const click = () => {
-      if (!pausedRef.current && sim.busy && coin.get().phase === 'idle' && take.get().status === 'rolling') skipLine();
-    };
-    window.addEventListener('mousedown', click);
     const hide = () => document.hidden && take.get().status === 'rolling' && setPaused(true);
     window.addEventListener('keydown', k);
     document.addEventListener('visibilitychange', hide);
     return () => {
       window.removeEventListener('keydown', k);
-      window.removeEventListener('mousedown', click);
       document.removeEventListener('visibilitychange', hide);
     };
   }, [retake]);

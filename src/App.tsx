@@ -18,7 +18,8 @@ export default function App() {
   const [screen, setScreen] = useState<'title' | 'game'>('title');
   const [sceneIndex, setSceneIndex] = useState(0);
   useEffect(() => {
-    const id = window.setTimeout(() => void loadGame(), 600);
+    // The physics WASM (~1.9 MB) too: fetched and compiled before a scene mounts and waits for it.
+    const id = window.setTimeout(() => void loadGame().then(() => import('./physics/world').then((p) => p.loadPhysics())), 600);
     return () => window.clearTimeout(id);
   }, []);
 

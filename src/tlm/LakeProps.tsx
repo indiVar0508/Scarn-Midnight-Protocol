@@ -233,3 +233,10 @@ export function CardboardCar({ position = [0, 0, 0], rotation = [0, 0, 0] }: Pla
     </group>
   );
 }
+
+// Stand on the floor: runek's world check flags them buried or floating.
+Backdrop.groundSitting = true;
+Van.groundSitting = true;
+DeskFan.groundSitting = true;
+Roomba.groundSitting = true;
+CardboardCar.groundSitting = true;

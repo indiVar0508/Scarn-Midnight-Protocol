@@ -20,7 +20,7 @@ movement (twin-stick aim, dodge roll, skating). We write our own controller on R
 
 ## 2. Architecture decision records
 
-### ADR-1: "WASM + Rapier + runek" means R3F + rapier.js, not a Rust rewrite
+### ADR-1 (superseded 2026-10-04 by ADR-11): "WASM + Rapier + runek" meant R3F + rapier.js
 - **Context:** The user asked for a WASM-based game using Rapier and runek components.
 - **Options:** (a) Rust plus Bevy/Rapier compiled to WASM; (b) React Three Fiber plus `@react-three/rapier`
   (Rapier's official WASM build) plus runek.
@@ -102,18 +102,72 @@ movement (twin-stick aim, dodge roll, skating). We write our own controller on R
 - `public/` (voices, fonts) stays at the root; `legacy/vite.config.ts` points `publicDir` at `../public`.
 - Vercel: plain Vite app at the root, so no Root Directory or "files outside root" settings are needed.
 
+### ADR-11: Physics is our own Rust crate on `rapier3d`, compiled to WASM; runek runs on it unmodified
+**User direction (2026-10-04):** "I wanted Rust rapier (github.com/dimforge/rapier) to be used, and runek
+integrated with Rapier, not bypassed. It has to be WASM-based." A Codex audit found the previous build used
+the prebuilt npm `@dimforge/rapier3d-compat` through `@react-three/rapier`, bypassed runek's `<World>`, never
+used runek's worlds-as-data, and hand-rolled bullets and interactions with distance math.
+
+Decision:
+1. **`crates/tlm-physics/`**: a Rust crate depending on `rapier3d` 0.36 (crates.io, published from
+   dimforge/rapier), exposed with `wasm-bindgen` and compiled to `wasm32-unknown-unknown`. It owns a rapier
+   `PhysicsWorld` and exposes a flat, handle-based API: bodies, colliders (cuboid, ball, capsule, cylinder,
+   cone, convex hull, trimesh), materials, collision groups, sensors, fixed-step stepping with collision and
+   intersection events, scene queries (ray cast), rapier's `KinematicCharacterController` (move + impulses on
+   dynamic bodies), and a projectile system (swept balls, shape-cast every step, hit events). Body poses are
+   exported in bulk through a `Float32Array` view on WASM memory. Rust unit tests cover each feature natively.
+2. **The built module is committed** (`src/physics/wasm/`: JS glue, `.d.ts`, `.wasm`) so Vercel needs no Rust
+   toolchain. `npm run wasm` rebuilds it, and a test fails if the crate's source hash no longer matches the
+   artifact (`src/physics/wasm/SOURCE_HASH`).
+3. **`src/physics/`** wraps the module in TypeScript (`PhysicsWorld`, `BodyApi`, `ColliderApi`, `Kcc`) and
+   provides a **drop-in `@react-three/rapier`-compatible React layer** (`Physics`, `RigidBody` with automatic
+   cuboid/hull/trimesh colliders from child meshes, collider components, `InstancedRigidBodies`, `useRapier`,
+   `useBeforePhysicsStep`/`useAfterPhysicsStep`, `interactionGroups`, the event props), with interpolated
+   rendering between fixed steps. Vite and TypeScript alias `@react-three/rapier` to it, so **runek's vendored
+   components and runek's `<World>` run unmodified on the Rust world**. `@react-three/rapier` and
+   `@dimforge/rapier3d-compat` are removed from `package.json`, so the bundle contains no JS rapier.
+4. **runek is the scene root, not bypassed:** each scene renders inside runek's `<World>` (its Canvas,
+   WorldContext and `<Physics>`; our camera, lights and timestep live inside). The static set of every scene
+   is **runek `WorldData` JSON** (`src/sets/*.world.json`, validated by runek's `parseWorld`) rendered by
+   `sets/SetPiece.tsx` with runek's `WorldNodes` through one component registry (`sets/registry.tsx`: runek
+   components + our runek-contract `tlm/` components), inside a `GroundContext` from runek's
+   `useGroundIndex`. `sets/sets.test.ts` runs runek's `checkWorld` over every set (nothing buried or
+   floating), and checks registry coverage and unique node ids. Scarn publishes himself as the
+   world's `player` (runek NPCs look at him, not at the camera). Gameplay actors (Scarn, goons, coin, trials)
+   stay code, rendered as `<World>` children (ADR-3).
+5. **No physics bypasses in gameplay:** the player and goon controllers use rapier's KCC (Rust); hitscan uses
+   Rust ray casts; enemy projectiles live in Rust and hit the player's capsule through rapier queries (no
+   distance checks); interactables, mop spots, gates and finish lines are rapier sensors reporting
+   intersection events. Ragdolls, the coin, the puck, shelves and reams are rapier dynamic bodies.
+
+Why a facade instead of rewriting runek: runek is "shadcn for 3D". Its components are meant to be owned and
+edited, but keeping them byte-identical to the registry proves they're integrated rather than forked, and
+lets us pull upstream updates with `runek add`. The facade is the integration seam.
+
+**Update (2026-10-10, later):** runek re-vendored at 0.14.0 (new office/home components, blazer
+garment with lapels, office poses); every new component's physics imports are covered by the facade.
+
+**Status (2026-10-10): all five points are implemented.** 15 Rust tests (`npm run test:rust`), 8 TS tests on
+the real WASM module (`src/physics/world.test.ts`), 21 set tests, and the browser QA in `tools/qa/` pass on
+the Rust physics. The production bundle has 0 bytes of JS rapier; the crate ships as a ~765 KB gz `.wasm`.
+
 ## 3. Directory layout (v2)
 
 ```
 (repo root)
   index.html, package.json, vite.config.ts, tsconfig.json, runek.config.json, vercel.json
+  crates/tlm-physics/  Rust crate on rapier3d 0.36 → wasm32 (src/lib.rs API, src/tests.rs)
+  scripts/          build-wasm.mjs (`npm run wasm`), wasm-hash.mjs (artifact freshness check)
   legacy/           the original 2D Phaser game (archived)
   src/
     main.tsx, App.tsx
     runek/            vendored runek components (CLI-managed; edit freely, we own them)
     tlm/              TLM-specific runek-contract components (PaperShelf, ReamPyramid, Forklift,
                       CheckoutCounter, ConferenceTable, FlagStand, HockeyRink, …)
-    sets/             WorldData JSON per set (+ registry.ts mapping type → component)
+    sets/             runek WorldData per set (*.world.json), registry.tsx (type → component),
+                      SetPiece.tsx (WorldNodes + GroundContext), sets.test.ts (checkWorld)
+    physics/          world.ts (TS API over the Rust module), react.tsx (@react-three/rapier facade),
+                      wasm/ (committed wasm-bindgen output + SOURCE_HASH)
     game/
       Stage.tsx       Canvas + Physics + camera + set + actors for the active scene
       camera/         DioramaCamera, MovieCamera (cutscene shots), SetReveal
@@ -134,10 +188,18 @@ movement (twin-stick aim, dodge roll, skating). We write our own controller on R
 - Budget: ≤ 400 active dynamic bodies in a scene, with ≤ 150 awake at once on mobile.
 
 ## 5. Performance budget
-- 60 fps on an integrated GPU at 1080p with DPR capped at 1.5; mobile DPR 1 and 30 fps floor.
-- One shadow-casting directional light (2048 shadow map desktop, 1024 mobile); the rest are baked-looking flat colours.
-- Instanced meshes for reams, crowd, debris; target ≤ 150 draw calls per scene.
+- 60 fps on an integrated GPU at 1080p with DPR capped (`dprFor`, passed to the Canvas: 1.25 on `medium`, 1.5 on `high`);
+  mobile DPR 1 and 30 fps floor. Measured (2026-10-11, Intel UHD / Raptor Lake-P laptop, 1080p, Scene 1,
+  `medium`): 33–45 fps in play, no frame over 100 ms after the loading card; click to playable
+  ~14 s on a first visit and ~9 s on a return (Chrome's shader cache) in a production build, ~16 s
+  on the dev server.
+- One shadow-casting directional light (2048 shadow map desktop, 1024 mobile); at most one or two point
+  lights per scene (gotcha 29). Light from fixtures is faked (emissive + bloom + floor pools).
+- Instanced meshes for reams, racking, joists, fixture rows; Scene 1 is ~1,000 draw calls per frame
+  including the shadow pass (the next thing to cut; the frame is CPU-bound on that laptop).
 - The 3D chunk (three + r3f + rapier ≈ 1.5–2 MB gz incl. wasm) is lazy-loaded after the menu paints.
+- Measure on the real GPU with `node tools/qa/perf.mjs [auto|low|medium|high]` (ANGLE over the host
+  GL driver), not the SwiftShader QA browser.
 
 ## 6. Testing
 - Vitest for pure logic: take rating, style scoring, blooper buffer, chart judge (reused), save migration.
@@ -231,6 +293,110 @@ movement (twin-stick aim, dodge roll, skating). We write our own controller on R
 18. **Screen-changing key handlers must `preventDefault()` Enter/Space.** Otherwise the browser's
    default activation "clicks" the newly autofocused button on the next screen (Enter on the end card
    went to the title and immediately started a new take).
-10. **The `-compat` Rapier build inlines its WASM** (~840 KB gz of the 1.16 MB gz game chunk). If load
-   time matters, switch to `@dimforge/rapier3d` (separate .wasm, streaming compile), which needs
-   `vite-plugin-wasm` and the right MIME type on Vercel.
+10. *(Obsolete since ADR-11: the JS `-compat` build is gone; our crate's `.wasm` is a separate, streamed asset.)*
+19. **Children clean up after `<Physics>` frees the world.** React runs a parent's cleanup before its
+   children's, so bodies/colliders/KCCs are removed from a disposed world. `PhysicsWorld.raw` then returns
+   an inert proxy (`DEAD_RETURNS`) instead of calling into freed Rust memory ("null pointer passed to rust").
+20. **KCC grounding:** spawn characters 2 cm above the floor (`KCC_OFFSET`, the controller's skin) and send
+   no downward motion while grounded, or rapier's KCC stalls on alternate frames and loses ~10% of movement.
+21. **Sensors:** `kcc_move` always excludes sensors (or a character is blocked by its own trigger volumes).
+   A fixed sensor vs a kinematic body needs `allPairs` (`ActiveCollisionTypes::all()`); moving sensors are
+   kinematic bodies moved every step (`useMovingSensor`). The mop only cleans on steps where it moved, so QA
+   must glide the player every frame (`tools/qa/sensors.mjs`), not teleport and dwell.
+22. **`Poster` defaults to `position=[0, 1.5, 0]`.** Inside a group, pass `[0, 0, 0]` explicitly (the old
+   hanging aisle signs floated 1.5 m above their strings).
+23. **Metals need an environment map.** Without one, `metalness` > 0.5 renders near-black (carts,
+   racking, ducts). `SceneEnvironment` (Stage) prefilters three's procedural `RoomEnvironment`;
+   scenes raise or lower it with `useEnvironmentIntensity` (Aisle Five 0.28, default 0.12). It is
+   also most of the scene's soft fill: giving it to metals only (to save compile time) darkened
+   Scene 1 by 30–40% and didn't shorten the compile in a production build. Keep it scene-wide.
+24. **Graphics tiers** (`game/systems/tier.ts`, `Post.tsx`): `high` (discrete GPUs) = N8AO + bloom +
+   ACES + vignette + grain + the environment map, MSAA 4; `medium` (integrated GPUs: Intel, Apple
+   base chips, AMD APUs, phones) drops N8AO and uses MSAA 2; `low` (SwiftShader/llvmpipe, i.e.
+   headless QA) has no composer and no env map, and keeps every figure at runek's coarse build
+   (`CastFigure`; detailed figures on the CPU rasterizer stretched frames to seconds);
+   `?fx=off|low|medium|high` overrides. An Intel
+   laptop got `high` before `medium` existed: 10 fps and a 10 s freeze. The tier is read once per
+   page from a probe context, because it sets the canvas pixel ratio, and that must go through the
+   Canvas's `dpr` prop (runek `World` `dpr`): R3F resets the ratio to the prop on every Canvas
+   re-render (each pause), so `setDpr` from inside doesn't stick. Emitters that should glow
+   use `toneMapped={false}` and colors above 1 (bloom threshold is 1). AgX was tried and flattened
+   black suits to grey; ACES keeps the contrast.
+25. **Fabric detail must fade early.** The Person surface detail fades once a period is under
+   ~4 px (`rkFade`); at the 0.2–0.7 window it read as hard stripes on black cloth in close-ups.
+26. **Never copy a body/collider ref at mount.** `<Physics>` may rebuild its world (StrictMode
+   mounts it twice in dev), which recreates every body; `RigidBody` re-assigns its ref, but a copy
+   made in a `[]` effect keeps the old, disposed one. Scarn's `sim.player.body/collider` went stale
+   that way: teleports did nothing and goon bullets that hit the live capsule weren't counted. Read
+   `ref.current` where it's used, or republish it every step (Scarn does now).
+27. **Headless QA renders on the CPU (SwiftShader), ~1–5 fps.** The env map costs 2–3× there, so
+   it's medium/high only; QA that depends on game time must wait on game state. For performance,
+   use `tools/qa/perf.mjs`, which renders on the real GPU.
+28. **three compiles a material the first time it's drawn, and the page blocks until the driver is
+   done** (Scene 1: one 7–13 s frame on an Intel laptop, more as characters appeared). Each take now
+   compiles behind a loading card (`Warmup` in Stage: world paused, script gate shut, see 31). Traps
+   in three r184, all hit here:
+   - Programs are keyed on the render target. With the post-processing composer the scene draws
+     into a render target (no tone mapping, linear output), so compile with one bound, or every lit
+     program compiles again on frame one.
+   - R3F's `shadows` asks for `PCFSoftShadowMap`, which r184 swaps for `PCFShadowMap` inside its
+     first shadow render; anything compiled before that bakes in `SHADOWMAP_TYPE_BASIC` and is
+     thrown away. `RendererSetup` (Stage) sets `PCFShadowMap` up front.
+   - `compileAsync` polls one program per material (missing its other variants) and throws from its
+     timer if a material is disposed meanwhile (a retake mid-load). `Warmup` polls every program in
+     `gl.info.programs` instead.
+   - `debug.checkShaderErrors` reads each program's info logs on first use; every read waits for
+     the GPU process to finish all queued work (seconds, in total). It's off; `?shaders=check`
+     turns it on when working on shaders.
+   - In Chrome on Linux (ANGLE over GL), `KHR_parallel_shader_compile` keeps the page responsive
+     but the GPU process still compiles one program at a time (~100–250 ms each for a lit
+     program). Load time scales with the number of distinct programs: keep variants down.
+29. **No point light per fixture.** three unrolls the light loop into every lit shader: 9 point lights
+   made each one ~81k characters and ~0.5–0.8 s to compile, and cost every pixel. Fixture light is
+   emissive tubes (bloom) plus additive floor pools (`FluorescentRow`), one or two real point lights
+   per scene at most.
+30. **runek builds figures on workers** (local change, `person/scheduler.ts` + `figure.worker.ts`;
+   main-thread slices only as a fallback). On the main thread the builds took ~6 s of Scene 1's load
+   and stuttered play as detailed builds ran. The queue sorts by level then distance: while the world
+   is paused no frame has measured anyone (distance ∞), and a single summed priority stopped every
+   build (`∞ < ∞` is false). `whenFiguresIdle('far')` is how the warmup knows every figure has a body.
+31. **Scene scripts go through `run()` (usually via `useSceneScript`), which waits for
+   `stageReady()`**, so dialogue never plays over the loading card. The gate is shut in `Warmup`'s
+   layout effect, which runs before the scene's (passive) effects start its script. The take's clock
+   (`startedAt`) restarts when the card comes down. Never start a script another way.
+32. **Every synthesized note and effect must disconnect itself when it ends** (`playInst`'s per-note
+   bus, `releaseAfter` in `synth.ts`; `sfx.ts` `tone`/`noise`). The music is built live from
+   oscillators, filters and waveshapers on Chrome's single audio thread, which also plays the voices.
+   A stopped oscillator's gain/filter chain otherwise stays connected until garbage collection, and
+   the audio thread keeps processing all of it: the Scene 3 montage held that thread at ~97% of a core
+   on the title screen, and in-game it fell behind (audio clock at 0.35–0.8× real time), so voice
+   lines broke up and took 2–3× their length. A source that `buildInst` creates must go through
+   `osc()`/`noiseSrc()` (they register it with the note), and nothing in it may connect straight to an
+   `audio.*` bus. Checks: `node tools/qa/music-load.mjs` (each song's audio-thread CPU on the title,
+   budget 50% of a core) and `node tools/qa/voice-cuts.mjs` (Scene 3 on the real GPU: cut lines and
+   seconds the audio clock fell behind). Mouse clicks never skip lines (Enter/E only): the mouse is
+   the gun, the dodge and the click that captures it, and clicks cut lines nobody meant to skip.
+33. **Loading is the GPU process's one thread.** On the Intel laptop (ANGLE/GL, Mesa) Chrome's GPU
+   process compiles shader programs one after another, and the same thread presents the page's
+   frames (`SwapBuffers`, `MakeCurrent`) and rasters its 2D canvases. A Chrome trace of Scene 1's
+   load showed it at ~100% for ~10 s. So: (a) the loading card does not animate — a pulse made
+   Chrome present every vsync, ~2.5 s of swaps that held the compiles back (~1.5 s of the load);
+   (b) count programs, not milliseconds — `BREAKDOWN=1 VARIANTS=1 node tools/qa/perf.mjs` lists
+   each and what split it (instancing, skinning, vertex colors, maps, double-sided, flat shading,
+   clearcoat); (c) the figures' kinds share one program (`person/materials.ts`, VENDORED change 2);
+   (d) the environment's RoomEnvironment renders unlit (`SceneEnvironment.tsx`: its lit walls
+   compiled three full lit programs, synchronously, for one render); (e) a take that moves to a new
+   set mid-take sets `take.location` in a layout effect, and the Stage runs the warmup again behind
+   the card (Scene 3's lake: every material there is shadowed and the drive's are not — 14–16
+   programs, a 1.7 s freeze on arriving, 5–6 s with the CPU busy). Measuring: time from the page's
+   own `pointerdown` (Playwright can hold a click back ~10 s while the title settles), and check
+   the machine is idle first (`uptime`): other jobs or power-saver mode double every number.
+34. **A sign hangs in front of the surface you can see, not the wall's position.** A `Wall` is a
+   slab centred on its position (0.2 thick: its faces are 0.1 either side), and a `WallSkin`'s paint
+   is 0.106 in front of the wall's centre line. Twelve posters in Scenes 1–2 sat at or behind those
+   (the Dundies, "0 days without an accident", WUPHF, the President's seal…): Scene 2's were inside
+   their walls from the start, Scene 1's were flush until the wall paint covered them. Hang a poster
+   0.014+ in front of the visible surface (its board is 0.011 deep) and clear of whatever stands in
+   front of the wall (the back shelves are 2.1 tall). `sets.test.ts` fails any poster that is inside
+   a wall, behind its paint, or facing it; `tools/qa/look.mjs` shoots any scene from given marks.
+

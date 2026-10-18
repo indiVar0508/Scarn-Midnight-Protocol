@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { CapsuleCollider, CuboidCollider, CylinderCollider, RigidBody, useBeforePhysicsStep, useRapier, type RapierCollider, type RapierRigidBody } from '@react-three/rapier';
+import { CapsuleCollider, CuboidCollider, CylinderCollider, RigidBody, useBeforePhysicsStep, useMovingSensor, useSensor, type RapierCollider, type RapierRigidBody } from '../../physics/react';
+import { RigidBodyType, type BodyApi } from '../../physics/world';
 import { Vector3, type Group, type Mesh, type MeshStandardMaterial } from 'three';
 import { rng, range } from '@runek/core';
 import { Cone } from '../../tlm/LakeProps';
@@ -74,6 +75,13 @@ function useOnce(onDone: (n: number) => void) {
 
 const MOP_SPOTS = 14;
 
+/** A dirt spot is a rapier sensor; it reports the mop head (a moving sensor) arriving and leaving. */
+function DirtSpot({ at, radius, mop, onTouch }: { at: Vec3; radius: number; mop: { current: BodyApi | null }; onTouch: (on: boolean) => void }) {
+  const isMop = (c: { parent(): BodyApi | null }) => c.parent() === mop.current;
+  useSensor({ shape: 'cylinder', halfHeight: 0.3, radius }, { x: at[0], y: 0.3, z: at[2] }, { onEnter: (c) => isMop(c) && onTouch(true), onExit: (c) => isMop(c) && onTouch(false) }, G.sensor);
+  return null;
+}
+
 export function MopTrial({ onDone, center }: TrialProps & { center: Vec3 }) {
   const finish = useOnce(onDone);
   const spots = useMemo(() => {
@@ -81,9 +89,13 @@ export function MopTrial({ onDone, center }: TrialProps & { center: Vec3 }) {
     return Array.from({ length: MOP_SPOTS }, () => ({ x: center[0] + range(r, -4.5, 4.5), z: center[2] + range(r, -3, 3), s: range(r, 0.35, 0.6) }));
   }, [center]);
   const dirt = useRef(spots.map(() => 1));
+  /** Which spots the mop head overlaps, per rapier's intersection events. */
+  const touching = useRef(spots.map(() => false));
   const meshes = useRef<(Mesh | null)[]>([]);
   const mop = useRef<Group>(null);
   const last = useRef(new Vector3());
+  // The mop head: a kinematic sensor (tool group) that only dirt-spot sensors notice.
+  const mopHead = useMovingSensor({ shape: 'ball', radius: 0.28 }, {}, G.tool);
   const cleaned = () => dirt.current.filter((d) => d <= 0.2).length;
   const clock = useTrialClock('MOP THE ICE', 20, () => `${cleaned()} / ${MOP_SPOTS} CLEAN`, () => end());
   const end = () => {
@@ -94,23 +106,20 @@ export function MopTrial({ onDone, center }: TrialProps & { center: Vec3 }) {
   };
 
   useBeforePhysicsStep(() => {
-    if (!clock.live) return;
     const p = sim.player.pos;
+    const { fx: fx2, fz } = camBasis(sim.cam.yaw);
+    mopHead.current?.setNextKinematicTranslation({ x: p.x + fx2 * 0.6, y: 0.15, z: p.z + fz * 0.6 });
+    if (!clock.live) return;
     const moving = last.current.distanceTo(p) > 0.004;
     last.current.copy(p);
     if (!moving) return;
-    const { fx: fx2, fz } = camBasis(sim.cam.yaw);
-    const mx = p.x + fx2 * 0.6;
-    const mz = p.z + fz * 0.6;
     dirt.current.forEach((d, i) => {
-      if (d <= 0) return;
-      if (Math.hypot(spots[i].x - mx, spots[i].z - mz) < spots[i].s + 0.25) {
-        const was = d;
-        dirt.current[i] = Math.max(0, d - STEP * 5);
-        if (was > 0.2 && dirt.current[i] <= 0.2) {
-          sfx('sparkle', 0, 80);
-          addStyle('SQUEAKY', 10);
-        }
+      if (d <= 0 || !touching.current[i]) return;
+      const was = d;
+      dirt.current[i] = Math.max(0, d - STEP * 5);
+      if (was > 0.2 && dirt.current[i] <= 0.2) {
+        sfx('sparkle', 0, 80);
+        addStyle('SQUEAKY', 10);
       }
     });
     if (cleaned() === MOP_SPOTS) end();
@@ -132,10 +141,13 @@ export function MopTrial({ onDone, center }: TrialProps & { center: Vec3 }) {
   return (
     <>
       {spots.map((s, i) => (
-        <mesh key={i} ref={(m) => (meshes.current[i] = m)} position={[s.x, 0.006, s.z]} rotation={[-Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[s.s, 18]} />
-          <meshStandardMaterial color="#5a4632" transparent opacity={0.85} />
-        </mesh>
+        <group key={i}>
+          <DirtSpot at={[s.x, 0, s.z]} radius={s.s} mop={mopHead} onTouch={(on) => (touching.current[i] = on)} />
+          <mesh ref={(m) => void (meshes.current[i] = m)} position={[s.x, 0.006, s.z]} rotation={[-Math.PI / 2, 0, 0]}>
+            <circleGeometry args={[s.s, 18]} />
+            <meshStandardMaterial color="#5a4632" transparent opacity={0.85} />
+          </mesh>
+        </group>
       ))}
       <group ref={mop}>
         <mesh position={[0, 0.06, 0]}>
@@ -154,6 +166,12 @@ export function MopTrial({ onDone, center }: TrialProps & { center: Vec3 }) {
 // ---------------------------------------------------------------------------------------------
 // 2. Stick handling: carry the puck through six gates in order
 
+/** A gate is a rapier sensor the puck body passes through. */
+function GateSensor({ at, puck, onPuck }: { at: { x: number; z: number }; puck: { current: BodyApi | null }; onPuck: () => void }) {
+  useSensor({ shape: 'cylinder', halfHeight: 0.3, radius: 0.5 }, { x: at.x, y: 0.15, z: at.z }, { onEnter: (c) => c.parent() === puck.current && onPuck() }, G.sensor);
+  return null;
+}
+
 export function StickTrial({ onDone, center }: TrialProps & { center: Vec3 }) {
   const finish = useOnce(onDone);
   const gates = useMemo(
@@ -168,36 +186,37 @@ export function StickTrial({ onDone, center }: TrialProps & { center: Vec3 }) {
   const puck = useRef<RapierRigidBody>(null);
   const gateMats = useRef<(MeshStandardMaterial | null)[]>([]);
   const prev = useRef(new Vector3());
+  /** The stick blade: a moving sensor; while the puck overlaps it, the puck is "on the stick". */
+  const onBlade = useRef(false);
+  const blade = useMovingSensor({ shape: 'cylinder', halfHeight: 0.15, radius: 0.45 }, { onEnter: (c) => c.parent() === puck.current && (onBlade.current = true), onExit: (c) => c.parent() === puck.current && (onBlade.current = false) }, G.sensor);
   const clock = useTrialClock('STICK HANDLING', 25, () => `${passed.current} / 6 GATES`, () => end());
   const end = () => {
     clock.stop();
     finish((passed.current / 6) * 100);
   };
+  const throughGate = (i: number) => {
+    if (i !== passed.current || !clock.live) return;
+    const m = gateMats.current[i];
+    if (m) m.color.set('#3ad17a');
+    passed.current += 1;
+    sfx('perfect');
+    addStyle('GATE', 20);
+    if (passed.current === 6) end();
+  };
 
   useBeforePhysicsStep(() => {
-    const b = puck.current;
-    if (!b || !clock.live) return;
     const p = sim.player.pos;
     const vel = new Vector3().subVectors(p, prev.current).divideScalar(STEP);
     prev.current.copy(p);
     const { fx: fx2, fz } = camBasis(sim.cam.yaw);
     const stick = new Vector3(p.x + fx2 * 0.75, 0.05, p.z + fz * 0.75);
-    const q = b.translation();
-    const d = Math.hypot(q.x - stick.x, q.z - stick.z);
+    blade.current?.setNextKinematicTranslation(stick);
+    const b = puck.current;
+    if (!b || !clock.live || !onBlade.current) return;
     // On the stick: the puck follows the blade (a soft spring plus the skater's own speed).
-    if (d < 0.9) {
-      const k = 9;
-      b.setLinvel({ x: (stick.x - q.x) * k + vel.x * 0.9, y: b.linvel().y, z: (stick.z - q.z) * k + vel.z * 0.9 }, true);
-    }
-    const g = gates[passed.current];
-    if (g && Math.hypot(q.x - g.x, q.z - g.z) < 0.55) {
-      const m = gateMats.current[passed.current];
-      if (m) m.color.set('#3ad17a');
-      passed.current += 1;
-      sfx('perfect');
-      addStyle('GATE', 20);
-      if (passed.current === 6) end();
-    }
+    const q = b.translation();
+    const k = 9;
+    b.setLinvel({ x: (stick.x - q.x) * k + vel.x * 0.9, y: b.linvel().y, z: (stick.z - q.z) * k + vel.z * 0.9 }, true);
   });
 
   return (
@@ -211,6 +230,7 @@ export function StickTrial({ onDone, center }: TrialProps & { center: Vec3 }) {
       </RigidBody>
       {gates.map((g, i) => (
         <group key={i} position={[g.x, 0, g.z]}>
+          <GateSensor at={{ x: g.x, z: g.z }} puck={puck} onPuck={() => throughGate(i)} />
           {[-0.45, 0.45].map((dz) => (
             <mesh key={dz} position={[0, 0.25, dz]} castShadow>
               <cylinderGeometry args={[0.03, 0.05, 0.5, 8]} />
@@ -237,7 +257,6 @@ function CardboardTarget({ at, onHit }: { at: Vec3; onHit: () => void }) {
   const body = useRef<RapierRigidBody>(null);
   const col = useRef<RapierCollider>(null);
   const down = useRef(false);
-  const { rapier } = useRapier();
   useEffect(() => {
     let handle = -1;
     const id = window.setInterval(() => {
@@ -248,7 +267,7 @@ function CardboardTarget({ at, onHit }: { at: Vec3; onHit: () => void }) {
         if (!b) return;
         if (!down.current) {
           down.current = true;
-          b.setBodyType(rapier.RigidBodyType.Dynamic, true);
+          b.setBodyType(RigidBodyType.Dynamic, true);
           b.setLinvel({ x: h.dir.x * 3, y: 1.5, z: h.dir.z * 3 }, true);
           b.setAngvel({ x: h.dir.z * 6, y: 0, z: -h.dir.x * 6 }, true);
           sfx('knockdown', 0, 60);
@@ -358,10 +377,15 @@ export function ObstacleTrial({ onDone, center }: TrialProps & { center: Vec3 })
     finish(made ? 100 - knocks.current * 12 - Math.max(0, t - 9) * 4 : 20 - knocks.current * 5);
   };
   useBeforePhysicsStep(() => {
-    if (!clock.live) return;
-    if (!started.current) started.current = sim.time;
-    if (sim.player.pos.x > finishX) end(true);
+    if (clock.live && !started.current) started.current = sim.time;
   });
+  // The finish line is a rapier sensor across the lane; crossing it is an intersection event.
+  useSensor(
+    { shape: 'cuboid', halfExtents: [0.25, 1.2, 3.6] },
+    { x: finishX, y: 1.2, z: center[2] },
+    { onEnter: (c) => clock.live && c.handle === sim.player.collider?.handle && end(true) },
+    G.sensor,
+  );
   return (
     <>
       {cones.map((c, i) => (

@@ -157,3 +157,11 @@ export function CubicleWall({ position = [0, 0, 0], rotation = [0, 0, 0], width 
     </group>
   );
 }
+
+// Stand on the floor: runek's world check flags them buried or floating.
+Forklift.groundSitting = true;
+Baler.groundSitting = true;
+OfficeDesk.groundSitting = true;
+DirectorChair.groundSitting = true;
+CameraTripod.groundSitting = true;
+CubicleWall.groundSitting = true;

@@ -1,0 +1,270 @@
+{
+  "version": 1,
+  "meta": {
+    "title": "The Lake",
+    "description": "A white tarp for a frozen lake, a painted backdrop with a seam, a desk fan and a van.",
+    "authors": [
+      {
+        "name": "Threat Level Midnight: Director's Cut"
+      }
+    ],
+    "license": "MIT"
+  },
+  "nodes": [
+    {
+      "type": "SetFloor",
+      "id": "warehouse-floor",
+      "props": {
+        "size": [
+          40,
+          26
+        ],
+        "position": [
+          0,
+          -0.02,
+          0
+        ],
+        "color": "#77756f"
+      }
+    },
+    {
+      "type": "SetFloor",
+      "id": "tarp",
+      "props": {
+        "size": [
+          28,
+          16
+        ],
+        "color": "#e8f1f6",
+        "friction": 0.03
+      }
+    },
+    {
+      "type": "Backdrop",
+      "id": "backdrop",
+      "props": {
+        "position": [
+          0,
+          0,
+          -8.4
+        ],
+        "width": 30,
+        "height": 7,
+        "seed": 9
+      }
+    },
+    {
+      "type": "Wall",
+      "id": "wall-west",
+      "props": {
+        "width": 26,
+        "height": 4,
+        "position": [
+          -15,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          1.5708,
+          0
+        ],
+        "color": "#9a968e"
+      }
+    },
+    {
+      "type": "Wall",
+      "id": "wall-east",
+      "props": {
+        "width": 26,
+        "height": 4,
+        "position": [
+          15,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          -1.5708,
+          0
+        ],
+        "color": "#9a968e"
+      }
+    },
+    {
+      "type": "DeskFan",
+      "id": "wind",
+      "props": {
+        "position": [
+          -6,
+          0,
+          -6.8
+        ],
+        "rotation": [
+          0,
+          0.4,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Poster",
+      "id": "wind-label",
+      "props": {
+        "position": [
+          -6,
+          0.95,
+          -6.75
+        ],
+        "size": [
+          0.6,
+          0.18
+        ],
+        "lines": [
+          {
+            "text": "WIND"
+          }
+        ],
+        "font": "marker",
+        "background": "#ffffff",
+        "board": false
+      }
+    },
+    {
+      "type": "Van",
+      "id": "van",
+      "props": {
+        "position": [
+          9.5,
+          0,
+          -4.5
+        ],
+        "rotation": [
+          0,
+          -0.3,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Roomba",
+      "id": "zamboni",
+      "props": {
+        "position": [
+          -3,
+          0,
+          -4
+        ],
+        "radius": 3,
+        "seed": 4
+      }
+    },
+    {
+      "type": "Poster",
+      "id": "thin-ice",
+      "props": {
+        "position": [
+          -12,
+          1.6,
+          -6
+        ],
+        "rotation": [
+          0,
+          0.6,
+          0
+        ],
+        "size": [
+          1.6,
+          0.8
+        ],
+        "lines": [
+          {
+            "text": "THIN ICE"
+          },
+          {
+            "text": "(it is a tarp)",
+            "size": 0.5,
+            "font": "marker"
+          }
+        ],
+        "background": "#ffffff",
+        "color": "#c0392b"
+      }
+    },
+    {
+      "type": "Group",
+      "id": "crew",
+      "props": {
+        "position": [
+          0,
+          0,
+          9.5
+        ]
+      },
+      "children": [
+        {
+          "type": "CameraTripod",
+          "id": "crew-camera",
+          "props": {
+            "position": [
+              -0.8,
+              0,
+              -0.4
+            ]
+          }
+        },
+        {
+          "type": "BoomMic",
+          "id": "crew-boom",
+          "props": {
+            "position": [
+              1.4,
+              2.3,
+              -0.2
+            ],
+            "rotation": [
+              0.2,
+              0.1,
+              0
+            ],
+            "length": 2.4
+          }
+        },
+        {
+          "type": "Cast",
+          "id": "crew-kevin",
+          "props": {
+            "who": "kevin",
+            "position": [
+              -0.8,
+              0,
+              0.3
+            ],
+            "rotation": [
+              0,
+              3.14159,
+              0
+            ]
+          }
+        },
+        {
+          "type": "Cast",
+          "id": "crew-pam",
+          "props": {
+            "who": "pam",
+            "position": [
+              1.4,
+              0,
+              0.3
+            ],
+            "rotation": [
+              0,
+              3.14159,
+              0
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

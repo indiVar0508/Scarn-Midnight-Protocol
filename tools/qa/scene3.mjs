@@ -2,6 +2,7 @@
 // crudely by a bot) → report card → wrapped → review → end card.
 import { mkdirSync } from 'node:fs';
 import { chromium } from 'playwright';
+import { stageShown } from './stage.mjs';
 const BASE = process.env.BASE ?? 'http://localhost:5174/';
 const out = process.env.OUT ?? 'tools/qa/out';
 mkdirSync(out, { recursive: true });
@@ -15,9 +16,11 @@ const yaw = (y) => page.evaluate((y) => (window.__TLM2__.sim.cam.yaw = y), y);
 await page.goto(BASE + '?unlock=all');
 await page.locator('.scene-row', { hasText: 'Cherokee Jack' }).click();
 await page.waitForFunction(() => window.__TLM2__, null, { timeout: 30000 });
+await stageShown(page);
 await page.waitForTimeout(3500);
 await page.screenshot({ path: `${out}/s3-01-drive.png` });
 for (let i = 0; i < 30 && (await T()).busy; i++) { await page.keyboard.press('Enter'); await page.waitForTimeout(300); }
+await stageShown(page); // the lake is a new set: the loading card comes up again while it compiles
 await page.waitForTimeout(2000);
 await page.screenshot({ path: `${out}/s3-02-lake.png` });
 console.log('lake', JSON.stringify(await T()));
@@ -26,7 +29,8 @@ console.log('at van focus:', (await T()).focus);
 await page.keyboard.press('KeyE'); await page.waitForTimeout(800);
 const seen = new Set();
 let lastTrial = null;
-for (let i = 0; i < 900; i++) {
+// Trials run on game time, which runs slow on a loaded machine: the loop exits when the scene wraps.
+for (let i = 0; i < 3000; i++) {
   const st = await T();
   if (st.status === 'wrapped') break;
   if (st.report && !seen.has('report')) { seen.add('report'); await page.screenshot({ path: `${out}/s3-09-report.png` }); }

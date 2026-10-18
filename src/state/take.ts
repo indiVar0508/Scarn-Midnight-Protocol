@@ -22,6 +22,12 @@ export interface TakeState {
   hint: string | null;
   /** Fade to black between rooms. */
   blackout: boolean;
+  /**
+   * The set the take is on, when a scene moves to a new one mid-take (Scene 3's drive → the lake).
+   * Changing it holds the world while the new set's shaders compile (`Warmup`); set it in a layout
+   * effect of the new set, so no frame draws it first.
+   */
+  location: string;
   /** A running minigame: title, seconds left, live score text. */
   trial: { title: string; timeLeft: number; score: string } | null;
   /** Big lower-third establishing-shot caption ("Scranton."). */
@@ -48,6 +54,7 @@ export const initialTake = (takeNo: number): TakeState => ({
   objective: null,
   hint: null,
   blackout: false,
+  location: '',
   trial: null,
   slate: null,
   report: null,

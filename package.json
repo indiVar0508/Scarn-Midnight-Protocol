@@ -16,12 +16,15 @@
     "qa": "node tools/qa/play.mjs && node tools/qa/wrap.mjs",
     "voice:export": "node --experimental-strip-types tools/voice/export-lines.ts",
     "voice:generate": "python3 tools/voice/generate.py",
-    "voice:audition": "python3 tools/voice/audition.py"
+    "voice:audition": "python3 tools/voice/audition.py",
+    "wasm": "node scripts/build-wasm.mjs",
+    "test:rust": "cargo test --release --manifest-path crates/tlm-physics/Cargo.toml"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.1",
-    "@react-three/rapier": "^2.2.0",
+    "@react-three/postprocessing": "^3.2.0",
+    "postprocessing": "^6.39.5",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "three": "^0.184.0"

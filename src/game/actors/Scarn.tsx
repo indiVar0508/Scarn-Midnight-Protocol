@@ -1,13 +1,15 @@
 import { useEffect, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { CapsuleCollider, RigidBody, useBeforePhysicsStep, useRapier, type RapierCollider, type RapierRigidBody } from '@react-three/rapier';
-import { Group, Vector3 } from 'three';
+import { CapsuleCollider, RigidBody, useBeforePhysicsStep, usePhysics, type RapierCollider, type RapierRigidBody } from '../../physics/react';
+import { QueryFilterFlags } from '../../physics/world';
+import { useWorld } from '@runek/core';
+import { Group, Object3D, Vector3 } from 'three';
 import { CastFigure, newDrive } from './CastFigure';
 import { input } from '../systems/input';
 import { G } from '../systems/groups';
 import { sim, addTrauma, camBasis, STEP, type Hit } from '../systems/sim';
 import { fx } from '../systems/Effects';
-import { useKcc } from '../systems/useKcc';
+import { KCC_OFFSET, useKcc } from '../systems/useKcc';
 import { take, addStyle, completeNote } from '../../state/take';
 import { sfx } from '@shared/audio/sfx';
 
@@ -33,8 +35,8 @@ const HIP = 0.95; // roll pivot height
 /** Seconds the camera stays pulled in after the last shot. */
 const AIM_HOLD = 0.6;
 
-/** How close (m) Scarn must be to use something. */
-const REACH_SLACK = 0.2;
+/** Where Scarn's eyes are above his feet: what runek's NPCs look at (runek Player contract). */
+const EYE_HEIGHT = 1.62;
 
 /** On ice: faster top speed, slow to start and very slow to stop (you glide). */
 const SKATE = { speed: 7.0, accel: 9, decel: 2.6 };
@@ -54,12 +56,15 @@ export function Scarn({ start, locked = false, armed = true, yaw, movement = 'wa
   const turn = useRef<Group>(null);
   const roll = useRef<Group>(null);
   const drive = useRef(newDrive());
-  const { world, rapier } = useRapier();
-  const kccRef = useKcc({ mass: 80 });
+  const eyes = useRef<Object3D>(null);
+  const world = usePhysics();
+  const kccRef = useKcc();
+  const { player } = useWorld();
 
   const m = useRef({
     vel: new Vector3(),
     vy: 0,
+    grounded: false,
     rollT: -1,
     rollCd: 0,
     rollDir: new Vector3(),
@@ -70,11 +75,21 @@ export function Scarn({ start, locked = false, armed = true, yaw, movement = 'wa
   });
 
   useEffect(() => {
-    sim.player.body = body.current;
     sim.player.alive = true;
     if (yaw !== undefined) sim.cam.yaw = yaw;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Publish the avatar to runek's world, so NPC heads track Scarn rather than the camera. Only
+  // clear the slot if it's still ours (runek Player does the same).
+  useEffect(() => {
+    if (!player) return;
+    const anchor = eyes.current;
+    player.current = anchor;
+    return () => {
+      if (player.current === anchor) player.current = null;
+    };
+  }, [player]);
 
   // Visuals per render frame: face the camera's forward (strafe), roll, blink when hurt.
   useFrame(() => {
@@ -100,6 +115,11 @@ export function Scarn({ start, locked = false, armed = true, yaw, movement = 'wa
     const col = collider.current;
     const kcc = kccRef.current;
     if (!rb || !col || !kcc) return;
+    // Publish the live handles every step: <Physics> can rebuild its world under us (StrictMode
+    // mounts it twice), which recreates this body and collider. A copy taken at mount went stale,
+    // so teleports did nothing and bullets hitting the new capsule weren't recognized as hits.
+    sim.player.body = rb;
+    sim.player.collider = col;
     const dt = STEP;
     const s = m.current;
     const d = drive.current;
@@ -119,13 +139,14 @@ export function Scarn({ start, locked = false, armed = true, yaw, movement = 'wa
     sim.player.iframes = Math.max(0, sim.player.iframes - dt);
     if (sim.hitstop > 0) return;
 
-    // --- Interaction: the nearest usable thing in reach gets the prompt; E uses it.
+    // --- Interaction: reach is a rapier sensor per interactable (its intersection events set
+    // `inReach`); among those in reach, the nearest gets the prompt and E uses it.
     let best: typeof sim.focus = null;
     let bestD = Infinity;
     for (const it of sim.interactables.values()) {
-      if (!it.enabled) continue;
+      if (!it.enabled || !it.inReach) continue;
       const dd = Math.hypot(it.pos.x - pos.x, it.pos.z - pos.z);
-      if (dd < it.radius + REACH_SLACK && dd < bestD) {
+      if (dd < bestD) {
         best = it;
         bestD = dd;
       }
@@ -163,11 +184,12 @@ export function Scarn({ start, locked = false, armed = true, yaw, movement = 'wa
       else s.vel.addScaledVector(dv.normalize(), step);
     }
 
-    // --- Gravity + KCC sweep.
-    s.vy = kcc.computedGrounded() ? -1 : s.vy - GRAVITY * dt;
-    kcc.computeColliderMovement(col, { x: s.vel.x * dt, y: s.vy * dt, z: s.vel.z * dt }, rapier.QueryFilterFlags.EXCLUDE_SENSORS, G.kccPlayer);
-    const mvd = kcc.computedMovement();
-    rb.setNextKinematicTranslation({ x: pos.x + mvd.x, y: pos.y + mvd.y, z: pos.z + mvd.z });
+    // --- Gravity + rapier's character controller (Rust). No downward push while grounded:
+    // snap-to-ground holds him down (see useKcc). The move sets the next kinematic translation and
+    // pushes dynamic props he walks into, as a 80 kg character would.
+    s.vy = s.grounded ? 0 : s.vy - GRAVITY * dt;
+    const mvd = kcc.move(col, { x: s.vel.x * dt, y: s.vy * dt, z: s.vel.z * dt }, { groups: G.kccPlayer, pushMass: 80 });
+    s.grounded = mvd?.grounded ?? false;
 
     // --- Shooting at whatever is under the crosshair (TECH ADR-5).
     s.fireCd -= dt;
@@ -202,8 +224,7 @@ export function Scarn({ start, locked = false, armed = true, yaw, movement = 'wa
     const dir = sim.player.aim.clone().sub(origin);
     if (dir.lengthSq() < 0.01) dir.set(fwdX, 0, fwdZ);
     dir.normalize();
-    const ray = new rapier.Ray(origin, dir);
-    const hit = world.castRay(ray, SHOT_RANGE, true, rapier.QueryFilterFlags.EXCLUDE_SENSORS, G.playerShot, undefined, body.current ?? undefined);
+    const hit = world.castRay(origin, dir, SHOT_RANGE, { flags: QueryFilterFlags.EXCLUDE_SENSORS, groups: G.playerShot, excludeBody: body.current });
     const toi = hit ? hit.timeOfImpact : SHOT_RANGE;
     const end = origin.clone().addScaledVector(dir, toi);
     fx.tracer(origin, end);
@@ -230,8 +251,9 @@ export function Scarn({ start, locked = false, armed = true, yaw, movement = 'wa
   }
 
   return (
-    <RigidBody ref={body} type="kinematicPosition" colliders={false} position={start} enabledRotations={[false, false, false]}>
+    <RigidBody ref={body} type="kinematicPosition" colliders={false} position={[start[0], start[1] + KCC_OFFSET, start[2]]} enabledRotations={[false, false, false]}>
       <CapsuleCollider ref={collider} args={[CAPSULE_HALF, CAPSULE_R]} collisionGroups={G.player} />
+      <object3D ref={eyes} position={[0, EYE_HEIGHT - FOOT, 0]} />
       <group ref={turn} position={[0, -FOOT, 0]}>
         <group position={[0, HIP, 0]}>
           <group ref={roll}>

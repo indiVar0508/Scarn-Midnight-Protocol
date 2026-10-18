@@ -119,3 +119,9 @@ export function BeetTub({ position = [0, 0, 0], rotation = [0, 0, 0] }: Placed) 
     </RigidBody>
   );
 }
+
+// Stand on the floor: runek's world check flags them buried or floating.
+Couch.groundSitting = true;
+Armchair.groundSitting = true;
+TvFireplace.groundSitting = true;
+BeetTub.groundSitting = true;

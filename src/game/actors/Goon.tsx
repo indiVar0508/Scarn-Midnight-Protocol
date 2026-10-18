@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { CapsuleCollider, RigidBody, useBeforePhysicsStep, useRapier, type CollisionEnterPayload, type RapierCollider, type RapierRigidBody } from '@react-three/rapier';
+import { CapsuleCollider, RigidBody, useBeforePhysicsStep, usePhysics, type CollisionEnterPayload, type RapierCollider, type RapierRigidBody } from '../../physics/react';
+import { QueryFilterFlags, RigidBodyType } from '../../physics/world';
 import { Group, Vector3 } from 'three';
 import { rng, range } from '@runek/core';
 import { CastFigure, newDrive } from './CastFigure';
+import { goonLook } from './cast';
 import { lerpAngle } from './Scarn';
 import { G } from '../systems/groups';
 import { sim, addTrauma, STEP, type Hit } from '../systems/sim';
 import { fx } from '../systems/Effects';
-import { useKcc } from '../systems/useKcc';
+import { KCC_OFFSET, useKcc } from '../systems/useKcc';
 import { take, addStyle } from '../../state/take';
 import { settings } from '@shared/state/settings';
 import { sfx } from '@shared/audio/sfx';
@@ -41,10 +43,10 @@ export function Goon({ start, seed = 1, hp = 2, delay = 0, onDown }: GoonProps) 
   const visual = useRef<Group>(null);
   const alert = useRef<Group>(null);
   const drive = useRef(newDrive());
-  const { world, rapier } = useRapier();
+  const world = usePhysics();
   const r = useMemo(() => rng(seed), [seed]);
 
-  const kccRef = useKcc({ mass: 70 });
+  const kccRef = useKcc();
 
   const m = useRef({
     mode: 'active' as Mode,
@@ -58,6 +60,7 @@ export function Goon({ start, seed = 1, hp = 2, delay = 0, onDown }: GoonProps) 
     push: new Vector3(),
     vel: new Vector3(),
     vy: 0,
+    grounded: false,
     reelT: 0,
     lastHitDir: new Vector3(0, 0, -1),
     registered: -1,
@@ -211,28 +214,28 @@ export function Goon({ start, seed = 1, hp = 2, delay = 0, onDown }: GoonProps) 
     s.impact = true;
   }
 
-  function moveKcc(rb: RapierRigidBody, col: RapierCollider, dx: number, dz: number, dt: number) {
+  /** rapier's character controller (Rust); no downward push while grounded (see useKcc). */
+  function moveKcc(_rb: RapierRigidBody, col: RapierCollider, dx: number, dz: number, dt: number) {
     const s = m.current;
     const kcc = kccRef.current;
     if (!kcc) return;
-    s.vy = kcc.computedGrounded() ? -1 : s.vy - 24 * dt;
-    kcc.computeColliderMovement(col, { x: dx, y: s.vy * dt, z: dz }, rapier.QueryFilterFlags.EXCLUDE_SENSORS, G.kccEnemy);
-    const mv = kcc.computedMovement();
-    const p = rb.translation();
-    rb.setNextKinematicTranslation({ x: p.x + mv.x, y: p.y + mv.y, z: p.z + mv.z });
+    s.vy = s.grounded ? 0 : s.vy - 24 * dt;
+    const mv = kcc.move(col, { x: dx, y: s.vy * dt, z: dz }, { groups: G.kccEnemy, pushMass: 70 });
+    s.grounded = mv?.grounded ?? false;
   }
 
   function hasLineOfSight(pos: { x: number; y: number; z: number }, dist: number, dir: Vector3, rb: RapierRigidBody): boolean {
     const feet = pos.y - (CAPSULE_HALF + CAPSULE_R);
-    const ray = new rapier.Ray({ x: pos.x, y: feet + GUN_HEIGHT, z: pos.z }, dir);
-    const hit = world.castRay(ray, dist, true, rapier.QueryFilterFlags.EXCLUDE_SENSORS, G.enemyShot, undefined, rb);
+    const hit = world.castRay({ x: pos.x, y: feet + GUN_HEIGHT, z: pos.z }, dir, dist, { flags: QueryFilterFlags.EXCLUDE_SENSORS, groups: G.enemySight, excludeBody: rb });
     return !hit;
   }
 
   function fire(pos: { x: number; y: number; z: number }, dir: Vector3, assist: boolean) {
     const feet = pos.y - (CAPSULE_HALF + CAPSULE_R);
     const from = new Vector3(pos.x, feet + GUN_HEIGHT, pos.z).addScaledVector(dir, 0.6);
-    fx.bullet(from, dir, assist ? 5.5 : 8);
+    // A rapier projectile (Rust): swept every step, it ends on the first wall, prop or player
+    // capsule it touches. It never hits the goon that fired it.
+    fx.bullet(from, dir, assist ? 5.5 : 8, body.current);
     drive.current.recoil = 0.12;
     sfx('enemy_shoot', 0, 60);
   }
@@ -240,7 +243,7 @@ export function Goon({ start, seed = 1, hp = 2, delay = 0, onDown }: GoonProps) 
   function knockDown(rb: RapierRigidBody, col: RapierCollider) {
     const s = m.current;
     s.mode = 'down';
-    rb.setBodyType(rapier.RigidBodyType.Dynamic, true);
+    rb.setBodyType(RigidBodyType.Dynamic, true);
     rb.setEnabledRotations(true, true, true, true);
     rb.setLinearDamping(0.4);
     rb.setAngularDamping(0.6);
@@ -262,10 +265,10 @@ export function Goon({ start, seed = 1, hp = 2, delay = 0, onDown }: GoonProps) 
 
   const foot = -(CAPSULE_HALF + CAPSULE_R);
   return (
-    <RigidBody ref={body} type="kinematicPosition" colliders={false} position={start} enabledRotations={[false, false, false]} onCollisionEnter={onImpact}>
+    <RigidBody ref={body} type="kinematicPosition" colliders={false} position={[start[0], start[1] + KCC_OFFSET, start[2]]} enabledRotations={[false, false, false]} onCollisionEnter={onImpact}>
       <CapsuleCollider ref={collider} args={[CAPSULE_HALF, CAPSULE_R]} collisionGroups={G.enemy} />
       <group ref={visual} position={[0, foot, 0]}>
-        <CastFigure who="goon" drive={drive} />
+        <CastFigure who={goonLook(seed)} drive={drive} />
       </group>
       <group ref={alert} position={[0, 1.35, 0]} visible={false}>
         <mesh position={[0, 0.18, 0]}>

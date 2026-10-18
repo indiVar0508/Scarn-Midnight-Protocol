@@ -247,6 +247,24 @@ kbd {
   background: rgba(0, 0, 0, 0.45);
   padding: 16px;
 }
+.stage-loading {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  pointer-events: none;
+}
+.stage-loading span {
+  font-family: var(--display);
+  font-size: 28px;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  opacity: 0.85;
+  /* No animation: any motion makes Chrome present a frame every vsync, and on an Intel laptop GPU
+     those swaps share one thread with the shader compiles this card is waiting for (~1.5 s of a
+     Scene 1 load, TECH gotcha 33). */
+}
 .clapper,
 .review,
 .pause {

@@ -4,6 +4,10 @@ import type { Line } from '@shared/data/script/lines';
 import { say as sayLines, choose as chooseOption, dialogueGen } from './dialogue';
 import { input } from './input';
 import { sim } from './sim';
+import { G } from './groups';
+import { useSensor } from '../../physics/react';
+import { stageReady } from './Warmup';
+import type { ColliderApi } from '../../physics/world';
 
 /** Thrown into a scene script when the take is reset (retake, quit). */
 export class Cancelled extends Error {
@@ -52,25 +56,52 @@ export function makeScript() {
 
 export type Script = ReturnType<typeof makeScript>;
 
-/** Run a script and swallow cancellation. */
+/**
+ * Run a script once the stage is ready (shaders compiled, see `Warmup`), and swallow
+ * cancellation. A retake while it waits drops it.
+ */
 export function run(fn: () => Promise<void>): void {
-  fn().catch((e) => {
-    if (!(e instanceof Cancelled)) console.error(e);
-  });
+  const gen = dialogueGen();
+  stageReady()
+    .then(() => (dialogueGen() === gen ? fn() : undefined))
+    .catch((e) => {
+      if (!(e instanceof Cancelled)) console.error(e);
+    });
 }
 
-/** Register a usable spot for the life of the component. `onUse` may change between renders. */
+/**
+ * Register a usable spot for the life of the component. Reach is a rapier sensor (a cylinder of
+ * `radius` around `pos`): its intersection events with the player's capsule mark the spot in
+ * reach, and the player's controller offers the nearest one in reach. `onUse` may change between
+ * renders.
+ */
 export function useInteractable(id: string, pos: [number, number, number], label: string, onUse: () => void, opts: { radius?: number; enabled?: boolean } = {}) {
   const cb = useRef(onUse);
   cb.current = onUse;
   const { radius = 1.3, enabled = true } = opts;
   useEffect(() => {
-    sim.interactables.set(id, { id, pos: new Vector3(...pos), radius, label, enabled, onUse: () => cb.current() });
+    sim.interactables.set(id, { id, pos: new Vector3(...pos), radius, label, enabled, inReach: false, onUse: () => cb.current() });
     return () => {
       sim.interactables.delete(id);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, label, radius, enabled, pos[0], pos[1], pos[2]]);
+  const isPlayer = (c: ColliderApi) => c.handle === sim.player.collider?.handle;
+  useSensor(
+    { shape: 'cylinder', halfHeight: 1.2, radius },
+    { x: pos[0], y: pos[1] + 1.2, z: pos[2] },
+    {
+      onEnter: (c) => {
+        const it = sim.interactables.get(id);
+        if (it && isPlayer(c)) it.inReach = true;
+      },
+      onExit: (c) => {
+        const it = sim.interactables.get(id);
+        if (it && isPlayer(c)) it.inReach = false;
+      },
+    },
+    G.sensor,
+  );
 }
 
 /**

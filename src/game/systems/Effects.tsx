@@ -1,7 +1,8 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useRapier } from '@react-three/rapier';
 import { Color, InstancedMesh, Object3D, Quaternion, Vector3 } from 'three';
+import { usePhysics, usePhysicsEvents } from '../../physics/react';
+import { PhysicsWorld, type BodyApi } from '../../physics/world';
 import { G } from './groups';
 import { sim, addTrauma } from './sim';
 import { take } from '../../state/take';
@@ -16,22 +17,18 @@ interface Spark {
   v: Vector3;
   life: number;
 }
-interface Bullet {
-  p: Vector3;
-  v: Vector3;
-  life: number;
-}
 
 const MAX_TRACERS = 24;
 const MAX_SPARKS = 160;
 const MAX_BULLETS = 48;
 const TRACER_LIFE = 0.07;
 const BULLET_RADIUS = 0.07;
-const PLAYER_RADIUS = 0.42;
+const BULLET_TTL = 4;
 
 const tracers: Tracer[] = [];
 const sparks: Spark[] = [];
-const bullets: Bullet[] = [];
+/** The physics world enemy projectiles fly in (set by <Effects>, which lives inside <Physics>). */
+let projectileWorld: PhysicsWorld | null = null;
 
 export const fx = {
   tracer(a: Vector3, b: Vector3): void {
@@ -48,19 +45,17 @@ export const fx = {
       sparks.push({ p: at.clone(), v, life: 0.25 + Math.random() * 0.25 });
     }
   },
-  /** An enemy shot: slow and bright so it can be read and dodged. */
-  bullet(from: Vector3, dir: Vector3, speed: number): void {
-    if (bullets.length >= MAX_BULLETS) bullets.shift();
-    bullets.push({ p: from.clone(), v: dir.clone().setY(0).normalize().multiplyScalar(speed), life: 4 });
-  },
-  /** Live projectiles (the reflex trial counts the ones that get past). */
-  bulletCount(): number {
-    return bullets.length;
+  /** An enemy shot: slow and bright so it can be read and dodged. It flies in Rust as a rapier
+   *  projectile (a ball shape-cast every step) and never hits `shooter`. */
+  bullet(from: Vector3, dir: Vector3, speed: number, shooter?: BodyApi | null): void {
+    if (!projectileWorld || projectileWorld.isDisposed) return;
+    const v = dir.clone().setY(0).normalize().multiplyScalar(speed);
+    projectileWorld.spawnProjectile(from, v, { radius: BULLET_RADIUS, ttl: BULLET_TTL, groups: G.enemyShot, excludeBody: shooter });
   },
   clear(): void {
     tracers.length = 0;
     sparks.length = 0;
-    bullets.length = 0;
+    if (projectileWorld && !projectileWorld.isDisposed) projectileWorld.clearProjectiles();
   },
 };
 
@@ -74,24 +69,23 @@ export function Effects() {
   const tracerMesh = useRef<InstancedMesh>(null);
   const sparkMesh = useRef<InstancedMesh>(null);
   const bulletMesh = useRef<InstancedMesh>(null);
-  const { world, rapier } = useRapier();
+  const world = usePhysics();
 
-  useFrame((_, rawDt) => {
-    const dt = Math.min(rawDt, 1 / 20);
-    // Enemy bullets: walls stop them, the player's capsule (by distance) takes them.
-    for (let i = bullets.length - 1; i >= 0; i--) {
-      const b = bullets[i];
-      const step = b.v.length() * dt;
-      const dir = tmp.copy(b.v).normalize();
-      const ray = new rapier.Ray(b.p, dir);
-      const hit = world.castRay(ray, step, true, rapier.QueryFilterFlags.EXCLUDE_SENSORS, G.enemyShot);
-      b.p.addScaledVector(b.v, dt);
-      b.life -= dt;
-      const pp = sim.player.pos;
-      const dx = b.p.x - pp.x;
-      const dz = b.p.z - pp.z;
-      if (sim.player.alive && Math.hypot(dx, dz) < PLAYER_RADIUS + BULLET_RADIUS && b.p.y < pp.y + 1.9) {
-        bullets.splice(i, 1);
+  useEffect(() => {
+    projectileWorld = world;
+    return () => {
+      if (projectileWorld === world) projectileWorld = null;
+    };
+  }, [world]);
+
+  // Projectile hits come from rapier: the player's capsule takes a hit (unless rolling), anything
+  // else stops the shot in a little burst of sparks.
+  usePhysicsEvents((events) => {
+    for (const e of events) {
+      if (e.kind !== 'projectile-hit') continue;
+      const at = new Vector3(e.point.x, e.point.y, e.point.z);
+      if (e.collider !== null && e.collider === sim.player.collider?.handle) {
+        if (!sim.player.alive) continue;
         if (sim.onPlayerHit) {
           sim.onPlayerHit(sim.player.iframes > 0);
         } else if (sim.player.iframes <= 0) {
@@ -102,11 +96,12 @@ export function Effects() {
         }
         continue;
       }
-      if (hit || b.life <= 0) {
-        if (hit) fx.sparks(b.p, dir.clone().negate(), 4);
-        bullets.splice(i, 1);
-      }
+      fx.sparks(at, new Vector3(0, 1, 0), 4);
     }
+  });
+
+  useFrame((_, rawDt) => {
+    const dt = Math.min(rawDt, 1 / 20);
     for (let i = tracers.length - 1; i >= 0; i--) {
       tracers[i].life -= dt;
       if (tracers[i].life <= 0) tracers.splice(i, 1);
@@ -151,16 +146,20 @@ export function Effects() {
       sm.count = sparks.length;
       sm.instanceMatrix.needsUpdate = true;
     }
+    // Projectiles are drawn straight from the Rust projectile buffer.
     const bm = bulletMesh.current;
-    if (bm) {
-      bullets.forEach((b, i) => {
-        dummy.position.copy(b.p);
+    if (bm && !world.isDisposed) {
+      const buf = world.projectiles();
+      const S = PhysicsWorld.PROJECTILE_STRIDE;
+      const n = Math.min(buf.length / S, MAX_BULLETS);
+      for (let i = 0; i < n; i++) {
+        dummy.position.set(buf[i * S + 1], buf[i * S + 2], buf[i * S + 3]);
         dummy.quaternion.identity();
         dummy.scale.setScalar(1);
         dummy.updateMatrix();
         bm.setMatrixAt(i, dummy.matrix);
-      });
-      bm.count = bullets.length;
+      }
+      bm.count = n;
       bm.instanceMatrix.needsUpdate = true;
     }
   });

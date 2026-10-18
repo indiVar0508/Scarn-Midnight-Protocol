@@ -61,6 +61,8 @@ export interface WorldNode {
 
 /** A whole world as plain data — diffable, forkable, version-controlled like any file. */
 export interface WorldData {
+  /** Editor hint, e.g. `https://runek.nullorder.org/r/world.schema.json`. Kept on save. */
+  $schema?: string
   version: 1
   /** The world's identity (title, authors, license, source). Optional. */
   meta?: WorldMeta
@@ -161,7 +163,7 @@ function normalizeNode(node: WorldNode): WorldNode {
 
 /**
  * Serialize a world to pretty JSON text with a canonical, stable key order
- * (`version, meta, unit, gravity, ground, time, timezone, avatar, controls,
+ * (`$schema, version, meta, unit, gravity, ground, time, timezone, avatar, controls,
  * palette, fonts, fog, nodes`; each node `type, id, anchor, props, children`). Stable
  * output means an unchanged node never churns the diff, so PR reviews show only
  * the real change.
@@ -169,7 +171,9 @@ function normalizeNode(node: WorldNode): WorldNode {
 export function serializeWorld(data: WorldData): string {
   // Build with a fixed key insertion order (nodes last); a plain record lets us add
   // the optional fields conditionally without TypeScript demanding `nodes` up front.
-  const out: Record<string, unknown> = { version: data.version }
+  const out: Record<string, unknown> = {}
+  if (data.$schema !== undefined) out.$schema = data.$schema
+  out.version = data.version
   if (data.meta !== undefined) out.meta = data.meta
   if (data.unit !== undefined) out.unit = data.unit
   if (data.gravity !== undefined) out.gravity = data.gravity
@@ -211,8 +215,8 @@ export function parseWorld(json: string): WorldData {
   if (data.timezone !== undefined && typeof data.timezone !== 'string') {
     throw new Error('World "timezone" must be a string')
   }
-  if (data.avatar !== undefined && data.avatar !== 'first' && data.avatar !== 'third') {
-    throw new Error('World "avatar" must be "first" or "third"')
+  if (data.avatar !== undefined && !['first', 'third', 'overhead'].includes(data.avatar)) {
+    throw new Error('World "avatar" must be "first", "third", or "overhead"')
   }
   if (data.ground !== undefined && typeof data.ground !== 'number') {
     throw new Error('World "ground" must be a number')

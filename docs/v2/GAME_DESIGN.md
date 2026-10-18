@@ -111,7 +111,8 @@ Retention is a **hypothesis** until Aisle Five proves people retake it voluntari
 - **Characters** are runek `Person` figures (procedural skinned humans) in the *stylized* proportion
   set, dressed per role in `v2/src/game/actors/cast.ts`: costume over each coworker's signature look
   (Scarn's black suit and slick hair, Samuel's glasses and tailcoat, Goldenface's gold face and black
-  turtleneck, the goons' masks, shades and gold ties; out of costume, Pam's cardigan, Stanley's
+  turtleneck, the goons in coloured ski masks, shades and gold ties, four mixed looks so a wave is never one
+  colour; out of costume, Pam's cardigan, Stanley's
   moustache and sweater, Angela's bun). They're stylized designs of fictional characters, **never actor
   likenesses**. Preview them all at `/?lineup` (or `/?lineup=scarn`).
 - **Set references** in Aisle Five: Dunder Mifflin banner and logo-printed paper cases, "0 days without

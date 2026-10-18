@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "meta": {
+    "title": "The Drive",
+    "description": "Scarn and Samuel in a cardboard car in front of a scrolling backdrop.",
+    "authors": [
+      {
+        "name": "Threat Level Midnight: Director's Cut"
+      }
+    ],
+    "license": "MIT"
+  },
+  "nodes": [
+    {
+      "type": "SetFloor",
+      "id": "floor",
+      "props": {
+        "size": [
+          30,
+          12
+        ],
+        "color": "#7a7a74"
+      }
+    },
+    {
+      "type": "CardboardCar",
+      "id": "car",
+      "props": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Chair",
+      "id": "seat-0",
+      "props": {
+        "position": [
+          0.45,
+          0,
+          0.35
+        ]
+      }
+    },
+    {
+      "type": "Chair",
+      "id": "seat-1",
+      "props": {
+        "position": [
+          -0.45,
+          0,
+          0.35
+        ]
+      }
+    },
+    {
+      "type": "Cast",
+      "id": "samuel",
+      "props": {
+        "who": "samuel",
+        "pose": "sit",
+        "position": [
+          0.45,
+          0,
+          0.35
+        ]
+      }
+    },
+    {
+      "type": "Cast",
+      "id": "scarn",
+      "props": {
+        "who": "scarn",
+        "pose": "sit",
+        "unarmed": true,
+        "position": [
+          -0.45,
+          0,
+          0.35
+        ]
+      }
+    }
+  ]
+}

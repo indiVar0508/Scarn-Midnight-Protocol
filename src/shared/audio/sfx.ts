@@ -1,4 +1,5 @@
 import { audio } from './engine';
+import { releaseAfter } from './synth';
 
 /**
  * Synthesized sound effects. Every sound is generated from oscillators and
@@ -53,9 +54,12 @@ function tone(o: ToneOpts): void {
     node.connect(f);
     node = f;
   }
-  node.connect(g).connect(out(o.pan));
+  const dest = out(o.pan);
+  node.connect(g).connect(dest);
   osc.start(t);
   osc.stop(t + o.dur + 0.05);
+  // Cut the finished sound out of the mix (see `playInst`); `dest` is this sound's own panner, if any.
+  releaseAfter([osc], g, dest === audio.sfx ? undefined : dest);
 }
 
 interface NoiseOpts {
@@ -88,14 +92,17 @@ function noise(o: NoiseOpts): void {
   g.gain.setValueAtTime(0.0001, t);
   g.gain.linearRampToValueAtTime(v, t + (o.attack ?? 0.004));
   g.gain.exponentialRampToValueAtTime(0.0001, t + o.dur);
-  src.connect(f).connect(g).connect(out(o.pan));
+  const dest = out(o.pan);
+  src.connect(f).connect(g).connect(dest);
+  let send: GainNode | undefined;
   if (o.reverb) {
-    const s = ctx.createGain();
-    s.gain.value = o.reverb;
-    g.connect(s).connect(audio.reverbSend);
+    send = ctx.createGain();
+    send.gain.value = o.reverb;
+    g.connect(send).connect(audio.reverbSend);
   }
   src.start(t, Math.random());
   src.stop(t + o.dur + 0.05);
+  releaseAfter([src], g, send, dest === audio.sfx ? undefined : dest);
 }
 
 let lastPlayed: Record<string, number> = {};

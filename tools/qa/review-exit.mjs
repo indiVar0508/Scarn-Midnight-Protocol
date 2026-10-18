@@ -2,6 +2,7 @@
 // newspaper montage → Esc skips → end card → Enter → title. Also Esc on review = PRINT IT.
 import { mkdirSync } from 'node:fs';
 import { chromium } from 'playwright';
+import { stageShown } from './stage.mjs';
 const BASE = process.env.BASE ?? 'http://localhost:5174/';
 const out = process.env.OUT ?? 'tools/qa/out';
 mkdirSync(out, { recursive: true });
@@ -13,10 +14,19 @@ const has = async (t) => (await page.locator(`text=${t}`).count()) > 0;
 const status = () => page.evaluate(() => window.__TLM2__.take.get());
 async function playToReview() {
   await page.waitForFunction(() => window.__TLM2__ && window.__TLM2__.sim.hittables.size > 0, null, { timeout: 30000 });
+  await stageShown(page);
   await page.waitForTimeout(800);
   await page.mouse.click(640, 400);
   const zap = () => page.evaluate(() => { const { sim } = window.__TLM2__; for (const h of sim.hittables.values()) h({ point: sim.player.pos.clone(), dir: sim.player.pos.clone().set(1, 0, 0), damage: 9 }); });
-  await zap(); await page.waitForTimeout(2600); await zap(); await page.waitForTimeout(3000);
+  await zap();
+  // Wait on game state, not the clock: wave 2 spawns after a delay in game time, and it's in when
+  // every goon of the take has registered (wave 1's stay registered, down).
+  await page.waitForFunction(() => window.__TLM2__.sim.hittables.size >= window.__TLM2__.take.get().goonsTotal, null, { timeout: 60000 });
+  await page.waitForTimeout(300);
+  await zap();
+  // Goons reel, then fall, in game time: slow under SwiftShader.
+  await page.waitForFunction(() => window.__TLM2__.take.get().status === 'wrapped', null, { timeout: 120000 });
+  await page.waitForTimeout(800);
 }
 await page.goto(BASE);
 await page.locator('.title .btn.primary').click();
@@ -46,6 +56,8 @@ console.log('  quit → title:', (await page.locator('.scene-list').count()) > 0
 await page.locator('.scene-row', { hasText: 'Aisle Five' }).click();
 await playToReview();
 await page.waitForTimeout(800);
+console.log('  before Esc:', JSON.stringify(await page.evaluate(() => { const t = window.__TLM2__.take.get(); return { status: t.status, down: t.goonsDown, total: t.goonsTotal, take: t.takeNo }; })), '| review:', await has('PRINT IT'));
 await page.keyboard.press('Escape'); await page.waitForTimeout(1200);
 console.log('7 Esc on review → wrap:', await has('THREAT'));
+if (!(await has('THREAT'))) await page.screenshot({ path: `${out}/step7.png` });
 await browser.close();

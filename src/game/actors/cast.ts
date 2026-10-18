@@ -12,6 +12,8 @@ export type CastLook = Omit<PersonProps, 'position' | 'rotation' | 'drive' | 'ph
   gun?: 'pistol' | 'gold';
   /** A sweatband around the head (Cherokee Jack). */
   headband?: string;
+  /** A knit ski mask over the head, this colour (Goldenface's henchmen). */
+  mask?: string;
 };
 
 const suit = (jacket: string, shirt: string, trousers = jacket) =>
@@ -19,7 +21,7 @@ const suit = (jacket: string, shirt: string, trousers = jacket) =>
     { type: 'shirt', color: shirt, sleeves: 'long', neck: 'collar', length: 0.6 },
     { type: 'trousers', color: trousers, length: 1 },
     { type: 'belt', color: '#1a1410' },
-    { type: 'coat', color: jacket, sleeves: 'long', neck: 'v', length: 0.32 },
+    { type: 'blazer', color: jacket, sleeves: 'long', length: 0.4 },
     { type: 'shoes', color: '#0c0c0c' },
   ] as NonNullable<PersonProps['clothes']>;
 
@@ -38,19 +40,73 @@ export const CAST_LOOKS = {
     tie: '#0e0e10',
     gun: 'pistol',
   },
-  /** Goldenface's henchmen: black suits, gold ties, ski masks, sunglasses. Committed extras. */
+  /**
+   * Goldenface's henchmen: committed extras in coloured ski masks, sunglasses and gold ties (the
+   * gang's uniform), each in his own suit. Four looks so a wave is a mix (user, 2026-10-19: not
+   * "only black"); `goonLook` deals them out by seed. Bald under the mask, so no hair pokes out.
+   */
   goon: {
     seed: 21,
     style: 'stylized',
     gender: 'masculine',
     height: 1.8,
     build: 'stocky',
-    skinTone: '#151518',
-    hair: { style: 'bald', color: '#151518' },
-    face: { brows: { color: '#151518' }, eyes: { color: '#151518', size: 0.9 } },
-    clothes: suit('#121214', '#1e1e22'),
+    skinTone: '#efc9a9',
+    hair: { style: 'bald', color: '#6b4a32' },
+    facialHair: 'none',
+    face: { eyes: { color: '#4a6a8a', size: 0.9 } },
+    clothes: suit('#2c2e33', '#141416'),
     tie: '#d4a017',
     shades: true,
+    mask: '#a8242c',
+    gun: 'pistol',
+  },
+  goon2: {
+    seed: 22,
+    style: 'stylized',
+    gender: 'masculine',
+    height: 1.86,
+    build: 'average',
+    skinTone: '#5e3b27',
+    hair: { style: 'bald', color: '#1a1410' },
+    facialHair: 'none',
+    face: { eyes: { color: '#3a2618', size: 0.9 } },
+    clothes: suit('#5e1220', '#141416'),
+    tie: '#d4a017',
+    shades: true,
+    mask: '#24366e',
+    gun: 'pistol',
+  },
+  goon3: {
+    seed: 23,
+    style: 'stylized',
+    gender: 'masculine',
+    height: 1.76,
+    build: 'stocky',
+    skinTone: '#c99167',
+    hair: { style: 'bald', color: '#2a1d14' },
+    facialHair: 'none',
+    face: { eyes: { color: '#5a3d24', size: 0.9 } },
+    clothes: suit('#1b2d66', '#cfd8e6'),
+    tie: '#d4a017',
+    shades: true,
+    mask: '#2e6a3c',
+    gun: 'pistol',
+  },
+  goon4: {
+    seed: 24,
+    style: 'stylized',
+    gender: 'masculine',
+    height: 1.9,
+    build: 'average',
+    skinTone: '#93603f',
+    hair: { style: 'bald', color: '#1a1410' },
+    facialHair: 'none',
+    face: { eyes: { color: '#2e1f14', size: 0.9 } },
+    clothes: suit('#5a3818', '#ece4d2'),
+    tie: '#d4a017',
+    shades: true,
+    mask: '#c9971f',
     gun: 'pistol',
   },
   /** The cashier who steals Scarn's line, in the Dunder Mifflin warehouse vest. */
@@ -80,7 +136,7 @@ export const CAST_LOOKS = {
     clothes: [
       { type: 'sweater', color: '#0d0d0f', sleeves: 'long', neck: 'crew' },
       { type: 'trousers', color: '#0d0d0f' },
-      { type: 'coat', color: '#0d0d0f', sleeves: 'long', neck: 'v', length: 0.32 },
+      { type: 'blazer', color: '#0d0d0f', sleeves: 'long', length: 0.4 },
       { type: 'shoes', color: '#0a0a0a' },
     ],
     gun: 'gold',
@@ -223,3 +279,7 @@ export const CAST_LOOKS = {
 } satisfies Record<string, CastLook>;
 
 export type CastId = keyof typeof CAST_LOOKS;
+
+/** The henchman looks, and the one a goon with this seed wears. */
+export const GOONS = ['goon', 'goon2', 'goon3', 'goon4'] as const satisfies readonly CastId[];
+export const goonLook = (seed: number) => GOONS[((seed % GOONS.length) + GOONS.length) % GOONS.length];

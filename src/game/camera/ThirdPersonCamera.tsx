@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { useRapier } from '@react-three/rapier';
+import { usePhysics } from '../../physics/react';
+import { QueryFilterFlags } from '../../physics/world';
 import { Vector3 } from 'three';
 import { input } from '../systems/input';
 import { G } from '../systems/groups';
@@ -26,7 +27,7 @@ const AIM_RANGE = 80;
  */
 export function ThirdPersonCamera() {
   const camera = useThree((s) => s.camera);
-  const { world, rapier } = useRapier();
+  const world = usePhysics();
   const dist = useRef(DIST);
   const v = useRef({ pivot: new Vector3(), dir: new Vector3(), want: new Vector3(), aim: new Vector3() });
 
@@ -63,7 +64,7 @@ export function ThirdPersonCamera() {
     // Spring arm: shorten against solid set walls, ease back out.
     const target = c.aiming ? DIST_AIM : DIST;
     const back = dir.clone().negate();
-    const hit = world.castRay(new rapier.Ray(pivot, back), target, true, rapier.QueryFilterFlags.EXCLUDE_SENSORS, G.camera, undefined, sim.player.body ?? undefined);
+    const hit = world.castRay(pivot, back, target, { flags: QueryFilterFlags.EXCLUDE_SENSORS, groups: G.camera, excludeBody: sim.player.body });
     const allowed = hit ? Math.max(0.6, hit.timeOfImpact - ARM_MARGIN) : target;
     dist.current = allowed < dist.current ? allowed : dist.current + (allowed - dist.current) * (1 - Math.exp(-dt * 6));
 
@@ -76,7 +77,7 @@ export function ThirdPersonCamera() {
 
     // Aim: what's under the crosshair, starting at the player so nothing behind them counts.
     const from = want.clone().addScaledVector(dir, dist.current);
-    const aimHit = world.castRay(new rapier.Ray(from, dir), AIM_RANGE, true, rapier.QueryFilterFlags.EXCLUDE_SENSORS, G.playerShot, undefined, sim.player.body ?? undefined);
+    const aimHit = world.castRay(from, dir, AIM_RANGE, { flags: QueryFilterFlags.EXCLUDE_SENSORS, groups: G.playerShot, excludeBody: sim.player.body });
     aim.copy(from).addScaledVector(dir, aimHit ? aimHit.timeOfImpact : AIM_RANGE);
     sim.player.aim.copy(aim);
     sim.aimOnTarget = !!aimHit && sim.hittables.has(aimHit.collider.handle);

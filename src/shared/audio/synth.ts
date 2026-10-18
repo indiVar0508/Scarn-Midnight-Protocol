@@ -57,6 +57,9 @@ function env(g: GainNode, t: number, a: number, peak: number, d: number, s: numb
   p.setTargetAtTime(0.0001, end, Math.max(0.005, rel / 4));
 }
 
+/** The sources of the note being built (see `playInst`). */
+let noteSources: AudioScheduledSourceNode[] | null = null;
+
 function osc(ctx: AudioContext, type: OscillatorType, f: number, t: number, stop: number, detune = 0): OscillatorNode {
   const o = ctx.createOscillator();
   o.type = type;
@@ -64,6 +67,7 @@ function osc(ctx: AudioContext, type: OscillatorType, f: number, t: number, stop
   o.detune.value = detune;
   o.start(t);
   o.stop(stop);
+  noteSources?.push(o);
   return o;
 }
 
@@ -73,7 +77,16 @@ function noiseSrc(ctx: AudioContext, t: number, stop: number): AudioBufferSource
   n.loop = true;
   n.start(t, Math.random() * 1.5);
   n.stop(stop);
+  noteSources?.push(n);
   return n;
+}
+
+/** Disconnect `nodes` once every one of `sources` has ended. */
+export function releaseAfter(sources: AudioScheduledSourceNode[], ...nodes: (AudioNode | undefined)[]): void {
+  const cut = () => nodes.forEach((n) => n?.disconnect());
+  let left = sources.length;
+  if (!left) return cut();
+  for (const s of sources) s.addEventListener('ended', () => --left || cut(), { once: true });
 }
 
 function filt(ctx: AudioContext, type: BiquadFilterType, f: number, q = 1): BiquadFilterNode {
@@ -100,9 +113,29 @@ function distortion(ctx: AudioContext, amount = 18): WaveShaperNode {
   return ws;
 }
 
+/**
+ * Play one note. It plays into its own bus, which is disconnected from the mix when the note's
+ * last source ends. A finished note's gains, filters and waveshapers otherwise stay connected
+ * until garbage collection, and Chrome's audio thread keeps processing every one of them: a song
+ * piles up thousands, the thread falls behind, and all audio (voices too) breaks up (TECH gotcha 32).
+ */
 export function playInst(inst: InstName, t: number, freq: number, dur: number, vel: number, out: AudioNode, send?: AudioNode): void {
   const ctx = audio.ctx;
   if (!ctx) return;
+  const bus = ctx.createGain();
+  bus.connect(out);
+  const sendBus = send && ctx.createGain();
+  sendBus?.connect(send!);
+  noteSources = [];
+  try {
+    buildInst(ctx, inst, t, freq, dur, vel, bus, sendBus);
+  } finally {
+    releaseAfter(noteSources, bus, sendBus);
+    noteSources = null;
+  }
+}
+
+function buildInst(ctx: AudioContext, inst: InstName, t: number, freq: number, dur: number, vel: number, out: AudioNode, send?: AudioNode): void {
   const v = Math.max(0.0001, vel);
   switch (inst) {
     case 'kick': {

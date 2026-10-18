@@ -1,22 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { CuboidCollider, RigidBody } from '@react-three/rapier';
-import { Wall } from '../../runek/Wall';
-import { Door } from '../../runek/Door';
-import { Table } from '../../runek/Table';
-import { Chair } from '../../runek/Chair';
-import { Rug } from '../../runek/Rug';
-import { Lamp } from '../../runek/Lamp';
-import { Flag } from '../../runek/Flag';
-import { SetFloor } from '../../tlm/SetFloor';
-import { Poster } from '../../tlm/Poster';
-import { CameraTripod, BoomMic } from '../../tlm/OfficeProps';
-import { Armchair, BeetTub, Couch, Trophy, TvFireplace } from '../../tlm/HomeProps';
 import { Scarn } from '../actors/Scarn';
-import { CastFigure } from '../actors/CastFigure';
-import type { CastId } from '../actors/cast';
 import { ThirdPersonCamera } from '../camera/ThirdPersonCamera';
+import { SetPiece } from '../../sets/SetPiece';
+import { SETS } from '../../sets';
 import { Coin, flipCoin, resetCoin, type FlipResult } from '../minigames/CoinFlip';
-import { G } from '../systems/groups';
 import { sim } from '../systems/sim';
 import { makeScript, run, useInteractable, useSceneScript } from '../systems/script';
 import { preloadLines, say } from '../systems/dialogue';
@@ -116,46 +103,8 @@ function Manor({ onLeave }: { onLeave: () => void }) {
   return (
     <>
       <HomeLights />
-      <SetFloor size={[11, 9]} color="#8a7a66" marks={[[0, 4.4, 11, 0.1]]} />
-      <Wall width={11} height={3} position={[0, 0, -4.5]} color="#d8cfbd" />
-      <Wall width={9} height={3} position={[-5.5, 0, 0]} rotation={[0, Math.PI / 2, 0]} color="#d8cfbd" />
-      <Wall width={9} height={3} position={[5.5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} color="#d8cfbd" />
-      <FourthWall z={4.55} width={11} />
-
-      <Door position={[3.8, 0, -4.45]} />
-      <Poster position={[3.8, 2.35, -4.43]} size={[1.2, 0.32]} lines={[{ text: 'SCARN MANOR' }]} font="bebas" background="#ffffff" tilt={0.03} />
-      <Poster position={[1.5, 1.75, -4.43]} size={[1.0, 1.3]} lines={[{ text: 'MICHAEL', size: 0.8 }, { text: 'SCARN', size: 1.2 }, { text: '(a portrait)', size: 0.4, font: 'marker' }, { text: 'by Michael Scarn', size: 0.4, font: 'marker' }]} font="serif" background="#e9dcc0" border={0.05} borderColor="#b8902c" />
-
-      <TvFireplace position={[-2.5, 0, -4.1]} />
-      <Couch position={[-2.5, 0, -1.3]} rotation={[0, Math.PI, 0]} />
-      <Table position={[-2.0, 0, -2.6]} width={1.2} depth={0.6} height={0.45} />
-      <Mug position={[-1.6, 0.47, -2.6]} />
-      <Armchair position={[0.4, 0, -0.9]} rotation={[0, -2.3, 0]} />
-      <Rug position={[-2.2, 0.01, -2]} size={[3.4, 2.6]} seed={7} />
-      <Lamp position={[-4.8, 0, -3.8]} />
-
-      {/* Self-awarded trophies on the sideboard. */}
-      <Table position={[4.6, 0, -1.5]} rotation={[0, Math.PI / 2, 0]} width={1.8} depth={0.5} height={0.9} />
-      {[-0.6, -0.2, 0.2, 0.6].map((z, i) => (
-        <Trophy key={z} position={[4.6, 0.9, -1.5 + z]} scale={1 + (i % 2) * 0.4} />
-      ))}
-      <Poster position={[5.45, 1.85, -1.5]} rotation={[0, -Math.PI / 2, 0]} size={[1.4, 0.5]} lines={[{ text: "WORLD'S BEST SPY" }, { text: '3 years running · voted by: me', size: 0.45, font: 'marker' }]} background="#1d1d1d" color="#e8c22e" />
-
-      {/* Catherine, in soft focus, on the side table. */}
-      <Table position={[-4.8, 0, 1.6]} width={0.6} depth={0.6} height={0.7} />
-      <Poster position={[-4.75, 0.9, 1.6]} rotation={[0, Math.PI / 2, -0.12]} size={[0.32, 0.4]} lines={[{ text: 'Catherine', font: 'serif' }, { text: 'forever', size: 0.6, font: 'marker' }]} background="#e6dcef" color="#5b3f78" border={0.08} borderColor="#c6a24a" />
-
-      {/* The "bathroom": Samuel's beet farm, behind a shower curtain. */}
-      <BeetTub position={[4.5, 0, 3.3]} rotation={[0, -Math.PI / 2, 0]} />
-      <mesh position={[3.5, 1.1, 3.0]} castShadow>
-        <boxGeometry args={[0.02, 2.2, 1.6]} />
-        <meshStandardMaterial color="#9fc6d6" transparent opacity={0.8} />
-      </mesh>
-
-      <group position={[2.9, 0, -3.3]} rotation={[0, -0.5, 0]}>
-        <CastFigure who="samuel" />
-      </group>
-      <Crew at={[0, 0, 6.2]} who={['kevin', 'pam']} />
+      {/* Scarn Manor is runek world data: src/sets/scarn-manor.world.json. */}
+      <SetPiece data={SETS.scarnManor} />
       <Scarn start={[0.9, 0.85, 0.2]} armed={false} yaw={0.3} />
     </>
   );
@@ -246,41 +195,9 @@ function OvalOffice() {
   return (
     <>
       <OfficeLights />
-      <SetFloor size={[12, 10]} color="#3f4a66" marks={[[0, 4.9, 12, 0.1]]} />
-      <Wall width={12} height={3} position={[0, 0, -5]} color="#e6e1d4" />
-      <Wall width={10} height={3} position={[-6, 0, 0]} rotation={[0, Math.PI / 2, 0]} color="#e6e1d4" />
-      <Wall width={10} height={3} position={[6, 0, 0]} rotation={[0, -Math.PI / 2, 0]} color="#e6e1d4" />
-      <FourthWall z={5.05} width={12} />
-
-      {/* The "oval" rug: a carpet sample, cut by hand. */}
-      <mesh position={[0, 0.01, -1.2]} scale={[2.6, 1, 1.7]} receiveShadow>
-        <cylinderGeometry args={[1, 1, 0.01, 48]} />
-        <meshStandardMaterial color="#26386b" />
-      </mesh>
-      <Table position={[0, 0, -1.5]} width={3.2} depth={1.3} height={0.75} color="#6b4a32" />
-      {[-1, 0, 1].map((x) => (
-        <Chair key={x} position={[x * 1.1, 0, -2.45]} />
-      ))}
-      <Chair position={[0, 0, -0.45]} rotation={[0, Math.PI, 0]} />
+      {/* The Oval Office is runek world data: src/sets/oval-office.world.json. */}
+      <SetPiece data={SETS.ovalOffice} />
       <Coin rest={COIN_REST} />
-      {/* The hotline: a red stapler. */}
-      <mesh position={[-0.9, 0.79, -1.4]} castShadow>
-        <boxGeometry args={[0.24, 0.07, 0.07]} />
-        <meshStandardMaterial color="#c0392b" />
-      </mesh>
-      <Poster position={[-0.9, 0.86, -1.36]} size={[0.2, 0.06]} lines={[{ text: 'HOTLINE' }]} background="#ffffff" board={false} />
-
-      <Flag position={[-2.4, 0, -4.4]} />
-      <Poster position={[0, 2.15, -4.93]} size={[1.1, 1.1]} lines={[{ text: 'SEAL OF THE', size: 0.5 }, { text: 'PRESIDENT', size: 0.9 }, { text: '(printed)', size: 0.4, font: 'marker' }]} background="#f0e7c8" color="#1d2d5c" font="serif" border={0.06} borderColor="#b8902c" tilt={0.12} />
-      <Poster position={[3.3, 1.6, -4.93]} size={[2.0, 1.2]} lines={[{ text: 'Q3 SAL', size: 0.9, font: 'marker', color: '#9aa3ad' }, { text: 'THREAT LEVEL:', size: 0.7, font: 'marker', color: '#1d2d5c' }, { text: '??? → MIDNIGHT', size: 0.7, font: 'marker', color: '#c0392b' }]} background="#fbfbf8" border={0.02} borderColor="#9aa3ad" />
-
-      <group position={PRES}>
-        <CastFigure who="president" />
-      </group>
-      <group position={[1.6, 0, 0.6]} rotation={[0, -2.2, 0]}>
-        <CastFigure who="samuel" />
-      </group>
-      <Crew at={[0, 0, 6.6]} who={['kevin', 'angela']} />
       <Scarn start={[0, 0.85, 3.6]} armed={false} yaw={0} />
     </>
   );
@@ -300,44 +217,7 @@ async function spin(s: ReturnType<typeof makeScript>) {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Shared bits
-
-/** The open side of the set: a strip of tape and an invisible line actors don't cross. */
-function FourthWall({ z, width }: { z: number; width: number }) {
-  return (
-    <RigidBody type="fixed" colliders={false} position={[0, 1.5, z]}>
-      <CuboidCollider args={[width / 2, 1.5, 0.1]} collisionGroups={G.barrier} />
-    </RigidBody>
-  );
-}
-
-/** A couple of coworkers behind the camera, watching the take. */
-function Crew({ at, who }: { at: Vec3; who: CastId[] }) {
-  return (
-    <group position={at}>
-      <SetFloor size={[14, 4]} position={[0, 0, 0.6]} color="#59606b" />
-      <CameraTripod position={[-0.6, 0, -0.6]} rotation={[0, 0, 0]} />
-      <BoomMic position={[1.2, 2.3, -0.4]} rotation={[0.2, 0.1, 0]} length={2.6} />
-      {who.map((w, i) => (
-        <group key={w} position={[(i ? 1.4 : -0.6) + 0, 0, 0.1]} rotation={[0, Math.PI, 0]}>
-          <CastFigure who={w} />
-        </group>
-      ))}
-    </group>
-  );
-}
-
-function Mug({ position }: { position: Vec3 }) {
-  return (
-    <group position={position}>
-      <mesh castShadow position={[0, 0.055, 0]}>
-        <cylinderGeometry args={[0.05, 0.045, 0.11, 16]} />
-        <meshStandardMaterial color="#f6f4ee" />
-      </mesh>
-      <Poster position={[0, 0.055, 0.051]} size={[0.08, 0.06]} lines={[{ text: "WORLD'S BEST SECRET AGENT" }]} font="serif" board={false} />
-    </group>
-  );
-}
+// Lights (the sets themselves are runek world data in src/sets)
 
 function HomeLights() {
   return (
@@ -354,12 +234,6 @@ function OfficeLights() {
     <>
       <hemisphereLight args={['#f4f6ff', '#3a3530', 0.8]} />
       <directionalLight position={[2, 7, 5]} intensity={1.2} castShadow shadow-mapSize={[2048, 2048]} shadow-camera-left={-7} shadow-camera-right={7} shadow-camera-top={7} shadow-camera-bottom={-7} shadow-bias={-0.0004} />
-      {[-3, 0, 3].map((x) => (
-        <mesh key={x} position={[x, 2.97, -1]}>
-          <boxGeometry args={[1.2, 0.04, 0.6]} />
-          <meshBasicMaterial color="#f4f2ea" />
-        </mesh>
-      ))}
     </>
   );
 }

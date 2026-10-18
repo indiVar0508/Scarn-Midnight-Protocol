@@ -1,15 +1,12 @@
-import { useEffect, useRef, useState, type ReactElement } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactElement } from 'react';
 import { useFrame } from '@react-three/fiber';
 import type { Group } from 'three';
-import { Wall } from '../../runek/Wall';
-import { Chair } from '../../runek/Chair';
-import { SetFloor } from '../../tlm/SetFloor';
-import { Poster } from '../../tlm/Poster';
-import { Backdrop, CardboardCar, DeskFan, Roomba, Van } from '../../tlm/LakeProps';
-import { BoomMic, CameraTripod } from '../../tlm/OfficeProps';
+import { Backdrop } from '../../tlm/LakeProps';
 import { Scarn } from '../actors/Scarn';
 import { CastFigure } from '../actors/CastFigure';
 import { ThirdPersonCamera } from '../camera/ThirdPersonCamera';
+import { SetPiece } from '../../sets/SetPiece';
+import { SETS } from '../../sets';
 import { MopTrial, ObstacleTrial, ReflexTrial, StickTrial, TargetTrial, type TrialProps } from '../minigames/Training';
 import { sim } from '../systems/sim';
 import { makeScript, run, useInteractable, useSceneScript, type Script } from '../systems/script';
@@ -100,20 +97,11 @@ function Drive({ onArrive }: { onArrive: () => void }) {
     <>
       <hemisphereLight args={['#fff6e0', '#3a3530', 0.8]} />
       <directionalLight position={[3, 6, 5]} intensity={1.3} />
-      <SetFloor size={[30, 12]} color="#7a7a74" />
+      {/* The drive is runek world data (src/sets/drive.world.json); only the backdrop moves. */}
+      <SetPiece data={SETS.drive} />
       {/* The backdrop slides past the car. It is the same backdrop for every location. */}
       <group ref={scroll}>
         <Backdrop position={[0, 0, -3]} width={48} height={6} seed={3} />
-      </group>
-      <CardboardCar position={[0, 0, 0]} />
-      {[0.45, -0.45].map((x) => (
-        <Chair key={x} position={[x, 0, 0.35]} />
-      ))}
-      <group position={[0.45, 0, 0.35]}>
-        <CastFigure who="samuel" pose="sit" />
-      </group>
-      <group position={[-0.45, 0, 0.35]}>
-        <CastFigure who="scarn" pose="sit" unarmed />
       </group>
     </>
   );
@@ -128,13 +116,20 @@ function Lake() {
   const resolveTrial = useRef<((n: number) => void) | null>(null);
   const [armed, setArmed] = useState(false);
 
+  // A new set: its shaders (every material now shadowed, the drive has no shadow light) compile
+  // behind the loading card before the first frame draws it.
+  useLayoutEffect(() => take.set({ location: 'lake' }), []);
   useEffect(() => {
     sim.busy = false;
     sim.shot = null;
     take.set({ blackout: false, objective: 'Find Cherokee Jack. He lives in a van. Down by the lake.', hint: 'You are on ice now: you glide. E: knock / talk' });
-    const t = window.setTimeout(() => take.set({ hint: null }), 8000);
-    return () => window.clearTimeout(t);
   }, []);
+  // The ice hint shows for 8 s of play: frames, so the lake's loading card doesn't use it up (the
+  // first frame after the card has a long delta, hence the cap).
+  const hintLeft = useRef(8);
+  useFrame((_, dt) => {
+    if (hintLeft.current > 0 && (hintLeft.current -= Math.min(dt, 0.1)) <= 0) take.set({ hint: null });
+  });
 
   const playTrial = (i: number) =>
     new Promise<number>((resolve) => {
@@ -222,30 +217,11 @@ function Lake() {
     <>
       <hemisphereLight args={['#eef6ff', '#5a6470', 0.9]} />
       <directionalLight position={[4, 12, 8]} intensity={1.5} castShadow shadow-mapSize={[2048, 2048]} shadow-camera-left={-16} shadow-camera-right={16} shadow-camera-top={12} shadow-camera-bottom={-12} shadow-bias={-0.0004} />
-      {/* The warehouse floor, with a white tarp for the frozen lake (slippery). */}
-      <SetFloor size={[40, 26]} position={[0, -0.02, 0]} color="#77756f" />
-      <SetFloor size={[28, 16]} color="#e8f1f6" friction={0.03} />
-      <Backdrop position={[0, 0, -8.4]} width={30} height={7} seed={9} />
-      <Wall width={26} height={4} position={[-15, 0, 0]} rotation={[0, Math.PI / 2, 0]} color="#9a968e" />
-      <Wall width={26} height={4} position={[15, 0, 0]} rotation={[0, -Math.PI / 2, 0]} color="#9a968e" />
-      <DeskFan position={[-6, 0, -6.8]} rotation={[0, 0.4, 0]} />
-      <Poster position={[-6, 0.95, -6.75]} size={[0.6, 0.18]} lines={[{ text: 'WIND' }]} font="marker" background="#ffffff" board={false} />
-      <Van position={[9.5, 0, -4.5]} rotation={[0, -0.3, 0]} />
+      {/* The lake (a tarp, a painted backdrop, a desk fan, a van, the crew) is runek world data:
+          src/sets/lake.world.json. Jack steps off his mark for two of the trials. */}
+      <SetPiece data={SETS.lake} />
       <group position={JACK} rotation={[0, -2.2, 0]}>
         {trial !== 2 && trial !== 4 && <CastFigure who="jack" />}
-      </group>
-      <Roomba position={[-3, 0, -4]} radius={3} seed={4} />
-      <Poster position={[-12, 1.6, -6]} rotation={[0, 0.6, 0]} size={[1.6, 0.8]} lines={[{ text: 'THIN ICE' }, { text: '(it is a tarp)', size: 0.5, font: 'marker' }]} background="#ffffff" color="#c0392b" />
-      {/* Crew behind the camera line, as always. */}
-      <group position={[0, 0, 9.5]}>
-        <CameraTripod position={[-0.8, 0, -0.4]} />
-        <BoomMic position={[1.4, 2.3, -0.2]} rotation={[0.2, 0.1, 0]} length={2.4} />
-        <group position={[-0.8, 0, 0.3]} rotation={[0, Math.PI, 0]}>
-          <CastFigure who="kevin" />
-        </group>
-        <group position={[1.4, 0, 0.3]} rotation={[0, Math.PI, 0]}>
-          <CastFigure who="pam" />
-        </group>
       </group>
 
       {T && <T.view key={trial} onDone={(n) => resolveTrial.current?.(n)} />}

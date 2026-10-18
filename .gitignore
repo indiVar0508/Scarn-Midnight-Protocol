@@ -15,3 +15,4 @@ tools/voice/lines.json
 __pycache__
 public/voice-audition
 legacy/tools/qa/out
+crates/*/target
